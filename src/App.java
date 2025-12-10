@@ -12,7 +12,7 @@ public class App extends JFrame {
         super();
         this.setContentPane(appTime);
         this.setTitle("Quản Lý Bán Hàng");
-        this.setSize(300,180);
+        this.setSize(300,130);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
         addEvents();
@@ -32,7 +32,6 @@ public class App extends JFrame {
         loginForm.setVisible(true);
 
         if (loginForm.isLoginSuccess()) {
-            labelMain.setText("Đăng Nhập Thành Công");
             this.setVisible(false);
             new DashBoard().setVisible(true);
         } else {

@@ -14,7 +14,7 @@ public class LoginForm extends  JDialog {
     public LoginForm(java.awt.Frame parent){
         super(parent, true);
         this.setContentPane(loginTime);
-        this.setSize(400,400);
+        this.setSize(250,200);
         this.setTitle("Đăng Nhập");
         this.setLocationRelativeTo(parent);
         addEvents();
