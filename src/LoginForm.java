@@ -4,7 +4,7 @@ import java.awt.event.ActionListener;
 import java.sql.*;
 
 public class LoginForm extends  JDialog {
-    private JPanel dangNhaptime;
+    private JPanel loginTime;
     private JButton loginButton;
     private JPasswordField passwordField1;
     private JTextField textField1;
@@ -13,7 +13,7 @@ public class LoginForm extends  JDialog {
 
     public LoginForm(){
         super();
-        this.setContentPane(dangNhaptime);
+        this.setContentPane(loginTime);
         this.setSize(400,400);
         this.setTitle("Đăng Nhập");
         this.setModal(true);
@@ -27,7 +27,7 @@ public class LoginForm extends  JDialog {
 
     public Connection getConnection() throws ClassNotFoundException, SQLException {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/quanLyUser", "root", "123456");
+        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/quanlybanhang", "root", "123456");
         return con;
     }
 
@@ -60,14 +60,14 @@ public class LoginForm extends  JDialog {
     public boolean checkLogin(String name, String password) throws Exception{
         Connection con = getConnection();
 
-        PreparedStatement ps = con.prepareStatement("SELECT * FROM user WHERE name = ? AND password = ?");
+        PreparedStatement ps = con.prepareStatement("SELECT * FROM accounts WHERE acc_name = ? AND acc_pass = ?");
         ps.setString(1, name);
         ps.setString(2,password);
         ResultSet rs = ps.executeQuery();
         return rs.next();
     }
 
-    public static void main(String[] args) {
-        new LoginForm();
-    }
+//    public static void main(String[] args) {
+//        new LoginForm();
+//    }
 }

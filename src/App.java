@@ -12,7 +12,7 @@ public class App extends JFrame {
         super();
         this.setContentPane(appTime);
         this.setTitle("Quản Lý Bán Hàng");
-        this.setSize(1000,800);
+        this.setSize(300,180);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
 
