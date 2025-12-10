@@ -62,3 +62,6 @@ CREATE TABLE Accounts (
     acc_name varchar(20),
     acc_pass varchar(255)
 );
+
+INSERT INTO Accounts (acc_name, acc_pass) 
+VALUES ('admin', '12345678');

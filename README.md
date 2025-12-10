@@ -1,6 +1,5 @@
 # Java-Web-Project
 
-
 ---Cách Clone dự án về máy:
 B1: Tải git -> Đăng nhập
 B2: Mở CMD ở folder muốn để -> Nhập lệnh git sau: 
@@ -14,7 +13,7 @@ B3: git push -u origin master -> push lên master của github
 ---Chú ý:
 -> Trước khi code hãy ĐẢM BẢO đã lấy code mới nhất trên github, dùng lệnh 'git pull' để lấy code về máy sau đó mới code.
 -> Branch chính là 'master', đừng nhầm lẫn :>
-
+-> Tất cả sql đều có trong folder ResourcesPack!
 
 Học thêm về git -> https://youtu.be/1JuYQgpbrW0?si=SJMmRFQjPelL4pT9
 
