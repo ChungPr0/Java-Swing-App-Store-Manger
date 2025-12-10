@@ -11,14 +11,15 @@ public class LoginForm extends  JDialog {
 
     private boolean isSuccess = false;
 
-    public LoginForm(){
-        super();
+    public LoginForm(java.awt.Frame parent){
+        super(parent, true);
         this.setContentPane(loginTime);
         this.setSize(400,400);
         this.setTitle("Đăng Nhập");
-        this.setModal(true);
+        this.setLocationRelativeTo(parent);
         addEvents();
     }
+
 
 
     public boolean isLoginSuccess() {
@@ -66,8 +67,4 @@ public class LoginForm extends  JDialog {
         ResultSet rs = ps.executeQuery();
         return rs.next();
     }
-
-//    public static void main(String[] args) {
-//        new LoginForm();
-//    }
 }

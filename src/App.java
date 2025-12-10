@@ -15,8 +15,10 @@ public class App extends JFrame {
         this.setSize(300,180);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
+        addEvents();
+    }
 
-
+    public void addEvents() {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -26,11 +28,13 @@ public class App extends JFrame {
     }
 
     public void login() {
-        LoginForm loginForm = new LoginForm();
+        LoginForm loginForm = new LoginForm(this);
         loginForm.setVisible(true);
 
         if (loginForm.isLoginSuccess()) {
             labelMain.setText("Đăng Nhập Thành Công");
+            this.setVisible(false);
+            new DashBoard().setVisible(true);
         } else {
             labelMain.setText("Đăng Nhập Thất Bại");
         }

@@ -65,3 +65,16 @@ CREATE TABLE Accounts (
 
 INSERT INTO Accounts (acc_name, acc_pass) 
 VALUES ('admin', '12345678');
+
+INSERT INTO Staffs (sta_name, sta_date_of_birth, sta_phone) 
+VALUES 
+(N'Nguyễn Văn An', '1990-05-15', '0901234567'),
+(N'Trần Thị Bích', '1995-08-20', '0912345678'),
+(N'Lê Hoàng Nam', '1988-12-10', '0988776655'),
+(N'Phạm Minh Tuấn', '2000-01-25', '0977112233'),
+(N'Hoàng Thu Thủy', '1992-03-30', '0965432109'),
+(N'Vũ Đức Mạnh', '1998-07-14', '0933998877'),
+(N'Đặng Văn Hùng', '1985-09-02', '0944556677'),
+(N'Bùi Thị Lan', '1999-11-11', '0922334455'),
+(N'Đỗ Quang Huy', '1993-06-18', '0919283746'),
+(N'Ngô Phương Thảo', '1996-04-22', '0955667788');
