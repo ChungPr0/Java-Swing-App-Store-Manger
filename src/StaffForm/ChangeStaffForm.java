@@ -16,6 +16,7 @@ public class ChangeStaffForm extends JDialog {
     private JTextField phone;
     private JButton changeButton;
     private JTextField address;
+    private JButton deleteButton;
     private String originalName;
 
     private boolean isChanged = false;
@@ -24,7 +25,7 @@ public class ChangeStaffForm extends JDialog {
         super(parent, true);
         this.setContentPane(changeStaffTime);
         this.setSize(550, 250);
-        this.setTitle("Sửa Nhân Viên: " + staffName);
+        this.setTitle("Nhân Viên: " + staffName);
         this.setLocationRelativeTo(parent);
         this.originalName = staffName;
 
@@ -66,6 +67,22 @@ public class ChangeStaffForm extends JDialog {
     }
 
     private void addEvents() {
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+                int confirm = JOptionPane.showConfirmDialog(
+                        ChangeStaffForm.this,
+                        "Bạn có chắc muốn xóa: " + originalName + "?"
+                );
+
+                if (confirm == JOptionPane.YES_OPTION) {
+                    delStaff(originalName);
+                    dispose();
+                }
+            }
+        });
+
         changeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -102,6 +119,27 @@ public class ChangeStaffForm extends JDialog {
 
     public boolean isChangedSuccess() {
         return isChanged;
+    }
+
+    private void delStaff(String staffName) {
+        String sql = "DELETE FROM Staffs WHERE sta_name = ?";
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, staffName);
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                JOptionPane.showMessageDialog(ChangeStaffForm.this, "Đã xóa thành công: " + staffName);
+                isChanged = true;
+            } else {
+                JOptionPane.showMessageDialog(ChangeStaffForm.this, "Không tìm thấy nhân viên này trong CSDL!");
+            }
+
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(ChangeStaffForm.this, "Lỗi kết nối CSDL: " + e.getMessage());
+        }
     }
 
     private void initComboBoxData() {

@@ -3,14 +3,16 @@ import StaffForm.AddStaffForm;
 import StaffForm.ChangeStaffForm;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.sql.*;
 
 public class DashBoard extends JFrame {
     private JPanel dashBoardTime;
     private JList<String> listStaff;
     private JButton staffButtonAdd;
-    private JButton staffButtonDelete;
     private JButton staffButtonChange;
+    private JTextField searchBox;
 
     public DashBoard(){
         super();
@@ -21,29 +23,65 @@ public class DashBoard extends JFrame {
         this.setLocationRelativeTo(null);
         addEvents();
         read();
+
     }
 
     void read() {
         DefaultListModel<String> model = new DefaultListModel<>();
-        try (Connection con = DBConnection.getConnection();) {
-            String sql = "SELECT sta_name FROM staffs";
-            PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        try (Connection con = DBConnection.getConnection()) {
 
+            String sql = "SELECT sta_name FROM staffs LIMIT 5"; // MySQL
+            PreparedStatement ps = con.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                String name = rs.getString("sta_name");
-                model.addElement(name);
+                model.addElement(rs.getString("sta_name"));
             }
 
             listStaff.setModel(model);
 
-        } catch (SQLException | ClassNotFoundException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage());
+        }
+    }
+
+    void searchStaff(String keyword) {
+        DefaultListModel<String> model = new DefaultListModel<>();
+
+        try (Connection con = DBConnection.getConnection()) {
+
+            String sql = "SELECT sta_name FROM staffs WHERE sta_name LIKE ? LIMIT 5";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, "%" + keyword + "%");
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                model.addElement(rs.getString("sta_name"));
+            }
+
+            listStaff.setModel(model);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     void addEvents() {
+        searchBox.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { doSearch(); }
+            public void removeUpdate(DocumentEvent e) { doSearch(); }
+            public void changedUpdate(DocumentEvent e) { doSearch(); }
+
+            private void doSearch() {
+                String key = searchBox.getText().trim();
+                if (key.isEmpty()) {
+                    read();
+                } else {
+                    searchStaff(key);
+                }
+            }
+        });
+
         staffButtonAdd.addActionListener(e -> {
             AddStaffForm addStaffForm = new AddStaffForm(this);
             addStaffForm.setVisible(true);
@@ -52,24 +90,10 @@ public class DashBoard extends JFrame {
             }
         });
 
-        // Nút Xóa
-        staffButtonDelete.addActionListener(e -> {
-            String selectedName = listStaff.getSelectedValue();
-            if (selectedName == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên để xóa!");
-                return;
-            }
-            int confirm = JOptionPane.showConfirmDialog(this, "Bạn có chắc muốn xóa: " + selectedName + "?");
-            if (confirm == JOptionPane.YES_OPTION) {
-                delStaff(selectedName);
-            }
-        });
-
-        // Nút Sửa
         staffButtonChange.addActionListener(e -> {
             String selectedName = listStaff.getSelectedValue();
             if (selectedName == null) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên để sửa!");
+                JOptionPane.showMessageDialog(this, "Vui lòng chọn nhân viên!");
                 return;
             }
 
@@ -81,28 +105,6 @@ public class DashBoard extends JFrame {
             }
 
         });
-    }
-
-
-    private void delStaff(String staffName) {
-        String sql = "DELETE FROM Staffs WHERE sta_name = ?";
-
-        try (Connection con = DBConnection.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setString(1, staffName);
-
-            int rows = ps.executeUpdate();
-            if (rows > 0) {
-                JOptionPane.showMessageDialog(this, "Đã xóa thành công: " + staffName);
-                read();
-            } else {
-                JOptionPane.showMessageDialog(this, "Không tìm thấy nhân viên này trong CSDL!");
-            }
-
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Lỗi kết nối CSDL: " + e.getMessage());
-        }
     }
 
     public static void main(String[] args) {
