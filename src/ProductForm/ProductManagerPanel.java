@@ -31,13 +31,11 @@ public class ProductManagerPanel extends JPanel {
         addChangeListeners();
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         this.setLayout(new BorderLayout(10, 10));
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
         this.setBackground(Color.decode("#ecf0f1"));
 
-        // --- 1. PANEL TRÁI (Tìm kiếm + List) ---
         JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
         leftPanel.setPreferredSize(new Dimension(250, 0));
         leftPanel.setOpaque(false);
@@ -55,7 +53,6 @@ public class ProductManagerPanel extends JPanel {
         leftPanel.add(searchPanel, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(listProduct), BorderLayout.CENTER);
 
-        // 2. Panel Phải: Form thông tin
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBackground(Color.WHITE);
@@ -93,13 +90,11 @@ public class ProductManagerPanel extends JPanel {
         rightPanel.add(pSupplier);
         rightPanel.add(Box.createVerticalStrut(15));
 
-        // Panel Nút bấm
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
-        btnSave = createButton("Lưu thay đổi", Color.GREEN);
-        btnDelete = createButton("Xóa sản phẩm", Color.RED);
+        btnSave = createButton("Lưu thay đổi", new Color(46, 204, 113));
+        btnDelete = createButton("Xóa sản phẩm", new Color(231, 76, 60));
 
-        // Ẩn mặc định
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
 
@@ -107,9 +102,14 @@ public class ProductManagerPanel extends JPanel {
         buttonPanel.add(btnDelete);
         rightPanel.add(buttonPanel);
 
-        // Ghép vào panel chính
         this.add(leftPanel, BorderLayout.WEST);
         this.add(rightPanel, BorderLayout.CENTER);
+
+        if (!JDBCUntils.Session.isAdmin()) {
+            btnAdd.setVisible(false);
+            btnAddType.setVisible(false);
+            btnEditType.setVisible(false);
+        }
 
         enableForm(false);
     }
@@ -126,7 +126,7 @@ public class ProductManagerPanel extends JPanel {
             }
             listProduct.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -140,7 +140,7 @@ public class ProductManagerPanel extends JPanel {
                 cbType.addItem(rs.getString("type_name"));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -154,7 +154,7 @@ public class ProductManagerPanel extends JPanel {
                 cbSupplier.addItem(rs.getString("sup_name"));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -178,14 +178,22 @@ public class ProductManagerPanel extends JPanel {
                 cbType.setSelectedItem(rs.getString("type_name"));
                 cbSupplier.setSelectedItem(rs.getString("sup_name"));
 
-                enableForm(true);
-                btnDelete.setVisible(true);
+                if (JDBCUntils.Session.isAdmin()) {
+                    enableForm(true);
+                    btnDelete.setVisible(true);
+                } else {
+                    enableForm(false);
+                    btnDelete.setVisible(false);
+                    btnSave.setVisible(false);
+                }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
-            btnSave.setVisible(false);
+            if (!JDBCUntils.Session.isAdmin()) {
+                btnSave.setVisible(false);
+            }
             isDataLoading = false;
         }
     }
@@ -247,18 +255,18 @@ public class ProductManagerPanel extends JPanel {
                 ps.setString(6, originalName);
 
                 if (ps.executeUpdate() > 0) {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                    showSuccess(this, "Cập nhật thành công!");
                     loadListData();
                     btnSave.setVisible(false);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                showError(this, "Lỗi: " + ex.getMessage());
             }
         });
 
         // 5. Nút Xóa
         btnDelete.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(this, "Xóa " + originalName + "?") == JOptionPane.YES_OPTION){
+            if(showConfirm(this, "Xóa " + originalName + "?")){
                 try (Connection con = DBConnection.getConnection()) {
                     PreparedStatement ps = con.prepareStatement("DELETE FROM Products WHERE pro_name=?");
                     ps.setString(1, originalName);
@@ -267,7 +275,7 @@ public class ProductManagerPanel extends JPanel {
                         clearForm();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                    showError(this, "Lỗi: " + ex.getMessage());
                 }
             }
         });
@@ -301,7 +309,7 @@ public class ProductManagerPanel extends JPanel {
                     loadTypeData();
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                showError(this, "Lỗi: " + ex.getMessage());
             }
         });
     }
@@ -333,7 +341,7 @@ public class ProductManagerPanel extends JPanel {
             }
             listProduct.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());;
+            showError(this, "Lỗi: " + e.getMessage());;
         }
     }
 
@@ -361,13 +369,22 @@ public class ProductManagerPanel extends JPanel {
     }
 
     private void enableForm(boolean enable) {
+        boolean isAdmin = JDBCUntils.Session.isAdmin();
+
         txtName.setEnabled(enable);
         txtPrice.setEnabled(enable);
         txtCount.setEnabled(enable);
         cbType.setEnabled(enable);
-        btnEditType.setEnabled(enable);
-        btnAddType.setEnabled(enable);
+        btnEditType.setEnabled(enable && isAdmin);
+        btnAddType.setEnabled(enable && isAdmin);
         cbSupplier.setEnabled(enable);
+    }
+
+    public void refreshData() {
+        loadTypeData();
+        loadSupplierData();
+        loadListData();
+        clearForm();
     }
 
     @FunctionalInterface

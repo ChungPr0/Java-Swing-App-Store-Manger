@@ -29,7 +29,6 @@ public class AddSupplierForm extends JDialog {
         this.setResizable(false); // Không cho kéo giãn lung tung
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -68,15 +67,16 @@ public class AddSupplierForm extends JDialog {
         mainPanel.add(buttonPanel);
 
         this.setContentPane(mainPanel);
+
+        getRootPane().setDefaultButton(btnSave);
     }
 
-    // --- CÁC HÀM LOGIC ---
     private void addEvents() {
         btnSave.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(AddSupplierForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                    showError(AddSupplierForm.this, "Vui lòng nhập đầy đủ thông tin!");
                     return;
                 }
 
@@ -90,12 +90,12 @@ public class AddSupplierForm extends JDialog {
 
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
-                        JOptionPane.showMessageDialog(AddSupplierForm.this, "Thêm thành công!");
+                        showSuccess(AddSupplierForm.this, "Thêm thành công!");
                         isAdded = true;
                         dispose();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(AddSupplierForm.this, "Lỗi: " + ex.getMessage());
+                    showError(AddSupplierForm.this, "Lỗi: " + ex.getMessage());
                 }
             }
         });

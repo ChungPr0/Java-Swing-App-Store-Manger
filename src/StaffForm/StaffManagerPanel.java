@@ -11,9 +11,9 @@ import java.sql.*;
 import static JDBCUntils.Style.*;
 
 public class StaffManagerPanel extends JPanel {
-    // --- KHAI BÁO BIẾN ---
     private JList<String> listStaff;
-    private JTextField txtSearch, txtName, txtPhone, txtAddress;
+    private JTextField txtSearch, txtName, txtPhone, txtAddress, txtUsername, txtPassword;
+    private JCheckBox chkIsAdmin;
     private JComboBox<String> cbDay, cbMonth, cbYear;
     private JButton btnAdd, btnSave, btnDelete;
 
@@ -21,19 +21,17 @@ public class StaffManagerPanel extends JPanel {
     private boolean isDataLoading = false;
 
     public StaffManagerPanel() {
-        initUI();           // Vẽ giao diện
-        initComboBoxData(); // Nạp ngày tháng
-        loadListData();     // Tải danh sách
-        addEvents();        // Gán sự kiện
-        addChangeListeners(); // Gán sự kiện hiện nút Lưu
+        initUI();
+        initComboBoxData();
+        loadListData();
+        addEvents();
+        addChangeListeners();
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         this.setLayout(new BorderLayout(10, 10));
         this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 1. Panel Trái: Tìm kiếm + Danh sách
         JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
         leftPanel.setPreferredSize(new Dimension(250, 0));
 
@@ -50,13 +48,11 @@ public class StaffManagerPanel extends JPanel {
         leftPanel.add(searchPanel, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(listStaff), BorderLayout.CENTER);
 
-        // 2. Panel Phải: Form thông tin
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Tiêu đề
         rightPanel.add(createHeaderLabel("THÔNG TIN NHÂN VIÊN"));
         rightPanel.add(Box.createVerticalStrut(20));
 
@@ -65,7 +61,6 @@ public class StaffManagerPanel extends JPanel {
         rightPanel.add(pName);
         rightPanel.add(Box.createVerticalStrut(15));
 
-        // --- PHẦN NGÀY SINH---
         cbDay = new JComboBox<>();
         cbMonth = new JComboBox<>();
         cbYear = new JComboBox<>();
@@ -83,14 +78,33 @@ public class StaffManagerPanel extends JPanel {
         rightPanel.add(pAddress);
         rightPanel.add(Box.createVerticalStrut(15));
 
+        txtUsername = new JTextField();
+        JPanel pUser = createTextFieldWithLabel(txtUsername, "Tài khoản đăng nhập:");
+        rightPanel.add(pUser);
+        rightPanel.add(Box.createVerticalStrut(15));
 
-        // Panel Nút bấm (Lưu / Xóa)
+        txtPassword = new JTextField();
+        JPanel pPass = createTextFieldWithLabel(txtPassword, "Mật khẩu:");
+        rightPanel.add(pPass);
+        rightPanel.add(Box.createVerticalStrut(15));
+
+        chkIsAdmin = new JCheckBox("Là Quản lý (Admin)");
+        chkIsAdmin.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        chkIsAdmin.setBackground(Color.WHITE);
+        chkIsAdmin.setForeground(Color.decode("#2c3e50"));
+
+        JPanel pRole = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        pRole.setBackground(Color.WHITE);
+        pRole.add(chkIsAdmin);
+
+        rightPanel.add(pRole);
+        rightPanel.add(Box.createVerticalStrut(15));
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
-        btnSave = createButton("Lưu thay đổi", Color.GREEN);
-        btnDelete = createButton("Xóa nhân viên", Color.RED);
+        btnSave = createButton("Lưu thay đổi", new Color(46, 204, 113));
+        btnDelete = createButton("Xóa nhân viên", new Color(231, 76, 60));
 
-        // Mặc định ẩn
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
 
@@ -98,14 +112,19 @@ public class StaffManagerPanel extends JPanel {
         buttonPanel.add(btnDelete);
         rightPanel.add(buttonPanel);
 
-        // Ghép vào Panel chính
+        JScrollPane rightScrollPane = new JScrollPane(rightPanel);
+        rightScrollPane.setBorder(null);
+        rightScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        rightScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        rightScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
+
         this.add(leftPanel, BorderLayout.WEST);
-        this.add(rightPanel, BorderLayout.CENTER);
+        this.add(rightScrollPane, BorderLayout.CENTER);
 
         enableForm(false);
     }
 
-    // --- PHẦN LOGIC DỮ LIỆU ---
     private void loadListData() {
         DefaultListModel<String> model = new DefaultListModel<>();
         try (Connection con = DBConnection.getConnection()) {
@@ -117,7 +136,7 @@ public class StaffManagerPanel extends JPanel {
             }
             listStaff.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -134,6 +153,12 @@ public class StaffManagerPanel extends JPanel {
                 txtPhone.setText(rs.getString("sta_phone"));
                 txtAddress.setText(rs.getString("sta_address"));
 
+                txtUsername.setText(rs.getString("sta_username"));
+                txtPassword.setText(rs.getString("sta_password"));
+
+                String role = rs.getString("sta_role");
+                chkIsAdmin.setSelected(role != null && role.equalsIgnoreCase("Admin"));
+
                 Date sqlDate = rs.getDate("sta_date_of_birth");
                 if (sqlDate != null) {
                     String[] parts = sqlDate.toString().split("-");
@@ -146,7 +171,7 @@ public class StaffManagerPanel extends JPanel {
                 btnDelete.setVisible(true);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
             btnSave.setVisible(false);
@@ -154,9 +179,7 @@ public class StaffManagerPanel extends JPanel {
         }
     }
 
-    // --- PHẦN SỰ KIỆN ---
     private void addEvents() {
-        // 1. load nhân viên khi chọn
         listStaff.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 String selected = listStaff.getSelectedValue();
@@ -167,7 +190,6 @@ public class StaffManagerPanel extends JPanel {
             }
         });
 
-        // 2. Tìm kiếm
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { doSearch(); }
             public void removeUpdate(DocumentEvent e) { doSearch(); }
@@ -183,7 +205,6 @@ public class StaffManagerPanel extends JPanel {
             }
         });
 
-        // 3. Nút Thêm
         btnAdd.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             AddStaffForm addStaffForm = new AddStaffForm(parentFrame);
@@ -194,32 +215,36 @@ public class StaffManagerPanel extends JPanel {
             }
         });
 
-        // 4. Nút Lưu
         btnSave.addActionListener(e -> {
             try (Connection con = DBConnection.getConnection()) {
                 String strDate = cbYear.getSelectedItem() + "-" + cbMonth.getSelectedItem() + "-" + cbDay.getSelectedItem();
-                String sql = "UPDATE Staffs SET sta_name=?, sta_date_of_birth=?, sta_phone=?, sta_address=? WHERE sta_name=?";
+
+                String sql = "UPDATE Staffs SET sta_name=?, sta_date_of_birth=?, sta_phone=?, sta_address=?, sta_username=?, sta_password=?, sta_role=? WHERE sta_name=?";
                 PreparedStatement ps = con.prepareStatement(sql);
+
                 ps.setString(1, txtName.getText());
                 ps.setString(2, strDate);
                 ps.setString(3, txtPhone.getText());
                 ps.setString(4, txtAddress.getText());
-                ps.setString(5, originalName);
+                ps.setString(5, txtUsername.getText());
+                ps.setString(6, txtPassword.getText());
+                ps.setString(7, chkIsAdmin.isSelected() ? "Admin" : "Staff");
+
+                ps.setString(8, originalName);
 
                 if (ps.executeUpdate() > 0) {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                    showSuccess(this, "Cập nhật thành công!");
                     originalName = txtName.getText();
                     loadListData();
                     btnSave.setVisible(false);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                showError(this, "Lỗi: " + ex.getMessage());
             }
         });
 
-        // 5. Nút Xóa
         btnDelete.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(this, "Xóa " + originalName + "?") == JOptionPane.YES_OPTION){
+            if(showConfirm(this, "Xóa " + originalName + "?")){
                 try (Connection con = DBConnection.getConnection()) {
                     PreparedStatement ps = con.prepareStatement("DELETE FROM Staffs WHERE sta_name=?");
                     ps.setString(1, originalName);
@@ -228,7 +253,7 @@ public class StaffManagerPanel extends JPanel {
                         clearForm();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                    showError(this, "Lỗi: " + ex.getMessage());
                 }
             }
         });
@@ -246,7 +271,7 @@ public class StaffManagerPanel extends JPanel {
             }
             listStaff.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -258,6 +283,11 @@ public class StaffManagerPanel extends JPanel {
         txtName.getDocument().addDocumentListener(docListener);
         txtPhone.getDocument().addDocumentListener(docListener);
         txtAddress.getDocument().addDocumentListener(docListener);
+        txtUsername.getDocument().addDocumentListener(docListener);
+        txtPassword.getDocument().addDocumentListener(docListener);
+        chkIsAdmin.addActionListener(e -> {
+            if (!isDataLoading) btnSave.setVisible(true);
+        });
 
         java.awt.event.ActionListener actionListener = e -> {
             if (!isDataLoading) btnSave.setVisible(true);
@@ -270,6 +300,8 @@ public class StaffManagerPanel extends JPanel {
     private void clearForm() {
         isDataLoading = true;
         txtName.setText(""); txtPhone.setText(""); txtAddress.setText("");
+        txtUsername.setText(""); txtPassword.setText(""); chkIsAdmin.setSelected(false);
+
         btnSave.setVisible(false); btnDelete.setVisible(false);
         enableForm(false);
         isDataLoading = false;
@@ -282,6 +314,9 @@ public class StaffManagerPanel extends JPanel {
         cbDay.setEnabled(enable);
         cbMonth.setEnabled(enable);
         cbYear.setEnabled(enable);
+        txtUsername.setEnabled(enable);
+        txtPassword.setEnabled(enable);
+        chkIsAdmin.setEnabled(enable);
     }
 
     private void initComboBoxData() {
@@ -290,6 +325,10 @@ public class StaffManagerPanel extends JPanel {
         for (int i = 2025; i >= 1960; i--) cbYear.addItem(String.valueOf(i));
     }
 
+    public void refreshData() {
+        loadListData();
+        clearForm();
+    }
 
     @FunctionalInterface
     interface DocumentUpdateListener { void update(DocumentEvent e); }

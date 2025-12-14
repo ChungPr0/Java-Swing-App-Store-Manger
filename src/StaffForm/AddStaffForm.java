@@ -13,34 +13,32 @@ import java.sql.PreparedStatement;
 import static JDBCUntils.Style.*;
 
 public class AddStaffForm extends JDialog {
-    private JTextField txtName, txtPhone, txtAddress;
+    private JTextField txtName, txtPhone, txtAddress, txtUsername, txtPassword;
+    private JCheckBox chkIsAdmin;
     private JComboBox<String> cbDay, cbMonth, cbYear;
     private JButton btnSave, btnCancel;
 
     private boolean isAdded = false;
 
     public AddStaffForm(Frame parent) {
-        super(parent, true); // Modal = true (chặn form cha)
+        super(parent, true);
         this.setTitle("Thêm Nhân Viên Mới");
         initUI();
         initComboBoxData();
         addEvents();
 
-        this.pack(); // Tự động co giãn kích thước vừa với nội dung
-        this.setLocationRelativeTo(parent); // Hiện giữa form cha
-        this.setResizable(false); // Không cho kéo giãn lung tung
+        this.pack();
+        this.setLocationRelativeTo(parent);
+        this.setResizable(false);
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(new EmptyBorder(20, 30, 20, 30));
         mainPanel.setBackground(Color.WHITE);
 
-        // 1. Tiêu đề
         JLabel lblTitle = createHeaderLabel("NHẬP THÔNG TIN");
-
         mainPanel.add(lblTitle);
         mainPanel.add(Box.createVerticalStrut(20));
 
@@ -49,7 +47,6 @@ public class AddStaffForm extends JDialog {
         mainPanel.add(pName);
         mainPanel.add(Box.createVerticalStrut(15));
 
-        // --- PHẦN NGÀY SINH---
         cbDay = new JComboBox<>();
         cbMonth = new JComboBox<>();
         cbYear = new JComboBox<>();
@@ -67,7 +64,27 @@ public class AddStaffForm extends JDialog {
         mainPanel.add(pAddress);
         mainPanel.add(Box.createVerticalStrut(15));
 
-        // 3. Các nút bấm (Lưu / Hủy)
+        txtUsername = new JTextField();
+        JPanel pUser = createTextFieldWithLabel(txtUsername, "Tài khoản đăng nhập:");
+        mainPanel.add(pUser);
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        txtPassword = new JTextField();
+        JPanel pPass = createTextFieldWithLabel(txtPassword, "Mật khẩu:");
+        mainPanel.add(pPass);
+        mainPanel.add(Box.createVerticalStrut(15));
+
+        chkIsAdmin = new JCheckBox("Là Quản lý (Admin)");
+        chkIsAdmin.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        chkIsAdmin.setBackground(Color.WHITE);
+        chkIsAdmin.setForeground(Color.decode("#2c3e50"));
+
+        JPanel pRole = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        pRole.setBackground(Color.WHITE);
+        pRole.add(chkIsAdmin);
+        mainPanel.add(pRole);
+        mainPanel.add(Box.createVerticalStrut(20));
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setBackground(Color.WHITE);
 
@@ -77,26 +94,25 @@ public class AddStaffForm extends JDialog {
         buttonPanel.add(btnSave);
         buttonPanel.add(btnCancel);
 
-        mainPanel.add(Box.createVerticalStrut(10));
         mainPanel.add(buttonPanel);
-
         this.setContentPane(mainPanel);
+
+        getRootPane().setDefaultButton(btnSave);
     }
 
-    // --- CÁC HÀM LOGIC ---
     private void addEvents() {
-        // Nút Lưu
         btnSave.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(AddStaffForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                if (txtName.getText().trim().isEmpty() || txtUsername.getText().trim().isEmpty() || txtPassword.getText().trim().isEmpty()) {
+                    showError(AddStaffForm.this, "Vui lòng nhập đầy đủ thông tin!");
                     return;
                 }
 
                 try (Connection con = DBConnection.getConnection()) {
                     String strDate = cbYear.getSelectedItem() + "-" + cbMonth.getSelectedItem() + "-" + cbDay.getSelectedItem();
-                    String sql = "INSERT INTO Staffs (sta_name, sta_date_of_birth, sta_phone, sta_address) VALUES (?, ?, ?, ?)";
+
+                    String sql = "INSERT INTO Staffs (sta_name, sta_date_of_birth, sta_phone, sta_address, sta_username, sta_password, sta_role) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
                     PreparedStatement ps = con.prepareStatement(sql);
                     ps.setString(1, txtName.getText().trim());
@@ -104,14 +120,22 @@ public class AddStaffForm extends JDialog {
                     ps.setString(3, txtPhone.getText().trim());
                     ps.setString(4, txtAddress.getText().trim());
 
+                    ps.setString(5, txtUsername.getText().trim());
+                    ps.setString(6, txtPassword.getText().trim());
+                    ps.setString(7, chkIsAdmin.isSelected() ? "Admin" : "Staff");
+
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
-                        JOptionPane.showMessageDialog(AddStaffForm.this, "Thêm thành công!");
+                        showSuccess(AddStaffForm.this, "Thêm nhân viên thành công!");
                         isAdded = true;
                         dispose();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(AddStaffForm.this, "Lỗi: " + ex.getMessage());
+                    if (ex.getMessage().contains("Duplicate")) {
+                        showError(AddStaffForm.this, "Tài khoản '" + txtUsername.getText() + "' đã tồn tại!");
+                    } else {
+                        showError(AddStaffForm.this, "Lỗi: " + ex.getMessage());
+                    }
                 }
             }
         });
@@ -128,5 +152,4 @@ public class AddStaffForm extends JDialog {
     public boolean isAddedSuccess() {
         return isAdded;
     }
-
 }

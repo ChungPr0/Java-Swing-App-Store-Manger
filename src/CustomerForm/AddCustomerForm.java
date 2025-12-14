@@ -19,17 +19,16 @@ public class AddCustomerForm extends JDialog {
     private boolean isAdded = false;
 
     public AddCustomerForm(Frame parent) {
-        super(parent, true); // Modal = true (chặn form cha)
+        super(parent, true);
         this.setTitle("Thêm Khách Hàng Mới");
         initUI();
         addEvents();
 
-        this.pack(); // Tự động co giãn kích thước vừa với nội dung
-        this.setLocationRelativeTo(parent); // Hiện giữa form cha
-        this.setResizable(false); // Không cho kéo giãn lung tung
+        this.pack();
+        this.setLocationRelativeTo(parent);
+        this.setResizable(false);
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -68,15 +67,16 @@ public class AddCustomerForm extends JDialog {
         mainPanel.add(buttonPanel);
 
         this.setContentPane(mainPanel);
+
+        getRootPane().setDefaultButton(btnSave);
     }
 
-    // --- CÁC HÀM LOGIC ---
     private void addEvents() {
         btnSave.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(CustomerForm.AddCustomerForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                    showError(CustomerForm.AddCustomerForm.this, "Vui lòng nhập đầy đủ thông tin!");
                     return;
                 }
 
@@ -90,12 +90,12 @@ public class AddCustomerForm extends JDialog {
 
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
-                        JOptionPane.showMessageDialog(CustomerForm.AddCustomerForm.this, "Thêm thành công!");
+                        showSuccess(CustomerForm.AddCustomerForm.this, "Thêm thành công!");
                         isAdded = true;
                         dispose();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(CustomerForm.AddCustomerForm.this, "Lỗi: " + ex.getMessage());
+                    showError(CustomerForm.AddCustomerForm.this, "Lỗi: " + ex.getMessage());
                 }
             }
         });

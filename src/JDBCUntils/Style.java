@@ -2,6 +2,7 @@ package JDBCUntils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.StyleConstants;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -43,7 +44,9 @@ public class Style {
         JPanel p = new JPanel(new BorderLayout(5, 5));
         p.setBackground(Color.WHITE);
         p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
         p.add(createTitleLabel(labelText), BorderLayout.NORTH);
+
         tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         tf.setPreferredSize(new Dimension(0, 35));
 
@@ -52,38 +55,8 @@ public class Style {
                 new javax.swing.border.EmptyBorder(5, 10, 5, 10)
         ));
 
-        p.add(tf, BorderLayout.CENTER);
+        installFocusAnimation(tf);
 
-        return p;
-    }
-
-    public static JPanel createTextFieldWithLabelType2(JTextField tf, String labelText) {
-        JPanel p = new JPanel(new BorderLayout(0, 0));
-        p.setBackground(Color.WHITE);
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        p.setPreferredSize(new Dimension(300, 40));
-
-        Color borderColor = Color.decode("#bdc3c7");
-        Color labelBgColor = Color.decode("#ecf0f1");
-        Color labelTextColor = Color.decode("#2c3e50");
-
-        JLabel lbl = new JLabel(labelText);
-        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        lbl.setForeground(labelTextColor);
-        lbl.setBackground(labelBgColor);
-        lbl.setOpaque(true);
-        lbl.setHorizontalAlignment(SwingConstants.CENTER);
-
-        lbl.setPreferredSize(new Dimension(120, 0));
-
-        lbl.setBorder(new javax.swing.border.MatteBorder(1, 1, 1, 0, borderColor));
-        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tf.setBackground(Color.WHITE);
-        tf.setBorder(new javax.swing.border.CompoundBorder(
-                new javax.swing.border.MatteBorder(1, 0, 1, 1, borderColor),
-                new javax.swing.border.EmptyBorder(5, 10, 5, 10)
-        ));
-        p.add(lbl, BorderLayout.WEST);
         p.add(tf, BorderLayout.CENTER);
 
         return p;
@@ -92,7 +65,7 @@ public class Style {
     public static JPanel createComboBoxWithLabel(JComboBox box, String labelText, JButton btn1, JButton btn2) {
         JPanel p = new JPanel(new BorderLayout(5, 5));
         p.setBackground(Color.WHITE);
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
 
         p.add(createTitleLabel(labelText), BorderLayout.NORTH);
 
@@ -103,15 +76,24 @@ public class Style {
         box.setBackground(Color.WHITE);
         box.setPreferredSize(new Dimension(0, 35));
 
-        JPanel btnPanel = new JPanel(new GridLayout(1, 0, 5, 0));
+        JPanel btnPanel = new JPanel();
+        btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
         btnPanel.setBackground(Color.WHITE);
 
         if (btn1 != null) {
             btnPanel.add(btn1);
+            btn1.setPreferredSize(new Dimension(80, 35));
+            btn1.setMaximumSize(new Dimension(80, 35));
+        }
+
+        if (btn1 != null && btn2 != null) {
+            btnPanel.add(Box.createHorizontalStrut(5));
         }
 
         if (btn2 != null) {
             btnPanel.add(btn2);
+            btn2.setPreferredSize(new Dimension(80, 35));
+            btn2.setMaximumSize(new Dimension(80, 35));
         }
 
         centerPanel.add(box, BorderLayout.CENTER);
@@ -247,21 +229,21 @@ public class Style {
         card.setBorder(new EmptyBorder(15, 20, 15, 20));
 
         JPanel pText = new JPanel(new GridLayout(2, 1));
-        pText.setOpaque(false); // Trong suốt để thấy màu nền
+        pText.setOpaque(false);
 
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblTitle.setForeground(new Color(255, 255, 255, 200));
         lblValue.setFont(new Font("Segoe UI", Font.BOLD, 24));
-        lblValue.setForeground(Color.WHITE); // Trắng đậm
+        lblValue.setForeground(Color.WHITE);
 
         pText.add(lblTitle);
         pText.add(lblValue);
 
         JLabel lblIcon = new JLabel();
-        try {
-            // lblIcon.setIcon(new ImageIcon(new ImageIcon(iconPath).getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
-        } catch (Exception e) {}
+
+        lblIcon.setIcon(new ImageIcon(new ImageIcon(iconPath).getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH)));
+
         lblIcon.setHorizontalAlignment(SwingConstants.RIGHT);
 
         card.add(pText, BorderLayout.CENTER);
@@ -275,9 +257,255 @@ public class Style {
         return card;
     }
 
+    public static boolean showConfirm(Component parent, String msg) {
+        final boolean[] result = {false};
+
+        Color mainColor = new Color(230, 126, 34);
+        String title = "XÁC NHẬN";
+        int maxWidth = 400;
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(parent));
+        dialog.setModal(true);
+        dialog.setUndecorated(true);
+        dialog.setLayout(new BorderLayout());
+
+        ((JPanel)dialog.getContentPane()).setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+
+        JPanel pHeader = new JPanel(new BorderLayout());
+        pHeader.setBackground(mainColor);
+        pHeader.setPreferredSize(new Dimension(0, 40));
+        pHeader.setBorder(new javax.swing.border.EmptyBorder(0, 15, 0, 15));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTitle.setForeground(Color.WHITE);
+        pHeader.add(lblTitle, BorderLayout.WEST);
+
+        JLabel lblClose = new JLabel("×");
+        lblClose.setFont(new Font("Arial", Font.BOLD, 28));
+        lblClose.setForeground(Color.WHITE);
+        lblClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblClose.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                result[0] = false;
+                dialog.dispose();
+            }
+        });
+        pHeader.add(lblClose, BorderLayout.EAST);
+
+        JPanel pContent = new JPanel(new BorderLayout());
+        pContent.setBackground(Color.WHITE);
+        pContent.setBorder(new javax.swing.border.EmptyBorder(20, 20, 20, 20));
+
+        JTextPane txtMsg = new JTextPane();
+        txtMsg.setText(msg);
+        txtMsg.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        txtMsg.setForeground(Color.decode("#2c3e50"));
+        txtMsg.setEnabled(false);
+        txtMsg.setDisabledTextColor(Color.decode("#2c3e50"));
+        txtMsg.setOpaque(false);
+
+        javax.swing.text.StyledDocument doc = txtMsg.getStyledDocument();
+        javax.swing.text.SimpleAttributeSet center = new javax.swing.text.SimpleAttributeSet();
+        javax.swing.text.StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
+
+        txtMsg.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
+        Dimension prefSize = txtMsg.getPreferredSize();
+        txtMsg.setPreferredSize(new Dimension(maxWidth, prefSize.height));
+
+        pContent.add(txtMsg, BorderLayout.CENTER);
+
+        JPanel pButton = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        pButton.setBackground(Color.WHITE);
+        pButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 15, 0));
+
+        JButton btnYes = createButton("Xác Nhận", mainColor);
+        JButton btnNo = createButton("Hủy Bỏ", Color.LIGHT_GRAY);
+        btnYes.setPreferredSize(new Dimension(110, 35));
+        btnNo.setPreferredSize(new Dimension(110, 35));
+        btnNo.setBorder(BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1));
+
+        btnYes.addActionListener(e -> {
+            result[0] = true;
+            dialog.dispose();
+        });
+
+        btnNo.addActionListener(e -> {
+            result[0] = false;
+            dialog.dispose();
+        });
+
+        btnYes.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnYes.setBackground(mainColor.brighter()); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btnYes.setBackground(mainColor); }
+        });
+
+        btnNo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnNo.setBackground(Color.LIGHT_GRAY.brighter()); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btnNo.setBackground(Color.LIGHT_GRAY); }
+        });
+
+        pButton.add(btnYes);
+        pButton.add(btnNo);
+
+        dialog.add(pHeader, BorderLayout.NORTH);
+        dialog.add(pContent, BorderLayout.CENTER);
+        dialog.add(pButton, BorderLayout.SOUTH);
+
+        dialog.getRootPane().setDefaultButton(btnYes);
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+
+        return result[0];
+    }
+
+    public static void showSuccess(Component parent, String msg) {
+        showCustomAlert(parent, msg, true);
+    }
+
+    public static void showError(Component parent, String msg) {
+        showCustomAlert(parent, msg, false);
+    }
+
+    private static void showCustomAlert(Component parent, String msg, boolean isSuccess) {
+        Color mainColor = isSuccess ? new Color(46, 204, 113) : new Color(231, 76, 60);
+        String title = isSuccess ? "THÀNH CÔNG" : "THẤT BẠI";
+        int maxWidth = 400;
+
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(parent));
+        dialog.setModal(true);
+        dialog.setUndecorated(true);
+        dialog.setLayout(new BorderLayout());
+
+        ((JPanel)dialog.getContentPane()).setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+
+        JPanel pHeader = new JPanel(new BorderLayout());
+        pHeader.setBackground(mainColor);
+        pHeader.setPreferredSize(new Dimension(0, 40));
+        pHeader.setBorder(new javax.swing.border.EmptyBorder(0, 15, 0, 15));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTitle.setForeground(Color.WHITE);
+        pHeader.add(lblTitle, BorderLayout.WEST);
+
+        JLabel lblClose = new JLabel("×");
+        lblClose.setFont(new Font("Arial", Font.BOLD, 28));
+        lblClose.setForeground(Color.WHITE);
+        lblClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblClose.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent e) { dialog.dispose(); }
+        });
+        pHeader.add(lblClose, BorderLayout.EAST);
+
+        JPanel pContent = new JPanel(new BorderLayout());
+        pContent.setBackground(Color.WHITE);
+        pContent.setBorder(new javax.swing.border.EmptyBorder(20, 20, 20, 20));
+
+        JTextPane txtMsg = new JTextPane();
+        txtMsg.setText(msg);
+        txtMsg.setFont(new Font("Segoe UI", Font.BOLD, 15));
+        txtMsg.setForeground(Color.decode("#2c3e50"));
+        txtMsg.setEnabled(false);
+        txtMsg.setDisabledTextColor(Color.decode("#2c3e50"));
+        txtMsg.setOpaque(false);
+
+        javax.swing.text.StyledDocument doc = txtMsg.getStyledDocument();
+        javax.swing.text.SimpleAttributeSet center = new javax.swing.text.SimpleAttributeSet();
+        javax.swing.text.StyleConstants.setAlignment(center, StyleConstants.ALIGN_CENTER);
+        doc.setParagraphAttributes(0, doc.getLength(), center, false);
+
+        txtMsg.setSize(new Dimension(maxWidth, Short.MAX_VALUE));
+        Dimension prefSize = txtMsg.getPreferredSize();
+        txtMsg.setPreferredSize(new Dimension(maxWidth, prefSize.height));
+
+        pContent.add(txtMsg, BorderLayout.CENTER);
+
+        JPanel pButton = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        pButton.setBackground(Color.WHITE);
+        pButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 15, 0));
+
+        JButton btnOK = createButton("Đồng ý", mainColor);
+        btnOK.setPreferredSize(new Dimension(110, 35));
+
+        btnOK.addActionListener(e -> dialog.dispose());
+
+        btnOK.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnOK.setBackground(mainColor.brighter()); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btnOK.setBackground(mainColor); }
+        });
+
+        pButton.add(btnOK);
+
+        dialog.add(pHeader, BorderLayout.NORTH);
+        dialog.add(pContent, BorderLayout.CENTER);
+        dialog.add(pButton, BorderLayout.SOUTH);
+
+        dialog.getRootPane().setDefaultButton(btnOK);
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+    }
+
     private static void createStyleComboBox(JComboBox<String> box) {
         box.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         box.setBackground(Color.WHITE);
         box.setPreferredSize(new Dimension(80, 35));
+    }
+
+    private static void installFocusAnimation(JTextField tf) {
+        final Color normalColor = Color.decode("#bdc3c7");
+        final Color focusColor = Color.decode("#3498db");
+
+        tf.addFocusListener(new java.awt.event.FocusAdapter() {
+            private javax.swing.Timer timer;
+            private float progress = 0f;
+
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                runAnimation(true);
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                runAnimation(false);
+            }
+
+            private void runAnimation(boolean isEnter) {
+                if (timer != null && timer.isRunning()) timer.stop();
+
+                timer = new javax.swing.Timer(10, evt -> {
+                    if (isEnter) {
+                        progress += 0.1f;
+                        if (progress >= 1f) { progress = 1f; timer.stop(); }
+                    } else {
+                        progress -= 0.1f;
+                        if (progress <= 0f) { progress = 0f; timer.stop(); }
+                    }
+
+                    Color newColor = blendColors(normalColor, focusColor, progress);
+
+                    tf.setBorder(new javax.swing.border.CompoundBorder(
+                            new javax.swing.border.LineBorder(newColor, 1),
+                            new javax.swing.border.EmptyBorder(5, 10, 5, 10)
+                    ));
+                    tf.repaint();
+                });
+                timer.start();
+            }
+        });
+    }
+
+    private static Color blendColors(Color c1, Color c2, float ratio) {
+        ratio = Math.max(0, Math.min(1, ratio));
+
+        int r = (int) (c1.getRed() * (1 - ratio) + c2.getRed() * ratio);
+        int g = (int) (c1.getGreen() * (1 - ratio) + c2.getGreen() * ratio);
+        int b = (int) (c1.getBlue() * (1 - ratio) + c2.getBlue() * ratio);
+
+        return new Color(r, g, b);
     }
 }

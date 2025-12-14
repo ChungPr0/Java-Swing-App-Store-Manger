@@ -26,13 +26,11 @@ public class SupplierManagerPanel extends JPanel {
         addChangeListeners();
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         this.setLayout(new BorderLayout(10, 10));
         this.setBorder(new EmptyBorder(10, 10, 10, 10));
         this.setBackground(Color.decode("#ecf0f1"));
 
-        // 1. Panel Trái: Tìm kiếm + Danh sách
         JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
         leftPanel.setPreferredSize(new Dimension(250, 0));
         leftPanel.setOpaque(false);
@@ -50,13 +48,11 @@ public class SupplierManagerPanel extends JPanel {
         leftPanel.add(searchPanel, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(listSupplier), BorderLayout.CENTER);
 
-        // 2. Panel Phải: Form thông tin
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Tiêu đề
         rightPanel.add(createHeaderLabel("THÔNG TIN NHÀ CUNG CẤP"));
         rightPanel.add(Box.createVerticalStrut(20));
 
@@ -75,13 +71,11 @@ public class SupplierManagerPanel extends JPanel {
         rightPanel.add(pAddress);
         rightPanel.add(Box.createVerticalStrut(15));
 
-        // Panel Nút bấm (Lưu / Xóa)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
-        btnSave = createButton("Lưu thay đổi", Color.GREEN);
-        btnDelete = createButton("Xóa Nhà Cung Cấp", Color.RED);
+        btnSave = createButton("Lưu thay đổi", new Color(46, 204, 113));
+        btnDelete = createButton("Xóa Nhà Cung Cấp", new Color(231, 76, 60));
 
-        // Mặc định ẩn
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
 
@@ -89,14 +83,12 @@ public class SupplierManagerPanel extends JPanel {
         buttonPanel.add(btnDelete);
         rightPanel.add(buttonPanel);
 
-        // Ghép vào Panel chính
         this.add(leftPanel, BorderLayout.WEST);
         this.add(rightPanel, BorderLayout.CENTER);
 
         enableForm(false);
     }
 
-    // --- PHẦN LOGIC DỮ LIỆU ---
     private void loadListData() {
         DefaultListModel<String> model = new DefaultListModel<>();
         try (Connection con = DBConnection.getConnection()) {
@@ -108,7 +100,7 @@ public class SupplierManagerPanel extends JPanel {
             }
             listSupplier.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -129,7 +121,7 @@ public class SupplierManagerPanel extends JPanel {
                 btnDelete.setVisible(true);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
             btnSave.setVisible(false);
@@ -137,9 +129,7 @@ public class SupplierManagerPanel extends JPanel {
         }
     }
 
-    // --- PHẦN SỰ KIỆN ---
     private void addEvents() {
-        // 1. Chọn list
         listSupplier.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 String selected = listSupplier.getSelectedValue();
@@ -150,7 +140,6 @@ public class SupplierManagerPanel extends JPanel {
             }
         });
 
-        // 2. Tìm kiếm
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { doSearch(); }
             public void removeUpdate(DocumentEvent e) { doSearch(); }
@@ -166,7 +155,6 @@ public class SupplierManagerPanel extends JPanel {
             }
         });
 
-        // 3. Nút Thêm
         btnAdd.addActionListener(e -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             AddSupplierForm addSupplierForm = new AddSupplierForm(parentFrame);
@@ -177,7 +165,6 @@ public class SupplierManagerPanel extends JPanel {
             }
         });
 
-        // 4. Nút Lưu
         btnSave.addActionListener(e -> {
             try (Connection con = DBConnection.getConnection()) {
                 String sql = "UPDATE Suppliers SET sup_name=?, sup_phone=?, sup_address=? WHERE sup_name=?";
@@ -188,19 +175,18 @@ public class SupplierManagerPanel extends JPanel {
                 ps.setString(4, originalName);
 
                 if (ps.executeUpdate() > 0) {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                    showSuccess(this, "Cập nhật thành công!");
                     originalName = txtName.getText();
                     loadListData();
                     btnSave.setVisible(false);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                showError(this, "Lỗi: " + ex.getMessage());
             }
         });
 
-        // 5. Nút Xóa
         btnDelete.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(this, "Xóa " + originalName + "?") == JOptionPane.YES_OPTION){
+            if(showConfirm(this, "Xóa " + originalName + "?")){
                 try (Connection con = DBConnection.getConnection()) {
                     PreparedStatement ps = con.prepareStatement("DELETE FROM Suppliers WHERE sup_name=?");
                     ps.setString(1, originalName);
@@ -209,7 +195,7 @@ public class SupplierManagerPanel extends JPanel {
                         clearForm();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                    showError(this, "Lỗi: " + ex.getMessage());
                 }
             }
         });
@@ -227,7 +213,7 @@ public class SupplierManagerPanel extends JPanel {
             }
             listSupplier.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());;
+            showError(this, "Lỗi: " + e.getMessage());;
         }
     }
 
@@ -253,6 +239,11 @@ public class SupplierManagerPanel extends JPanel {
         txtName.setEnabled(enable);
         txtPhone.setEnabled(enable);
         txtAddress.setEnabled(enable);
+    }
+
+    public void refreshData() {
+        loadListData();
+        clearForm();
     }
 
     @FunctionalInterface

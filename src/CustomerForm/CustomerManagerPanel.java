@@ -109,7 +109,7 @@ public class CustomerManagerPanel extends JPanel {
             }
             listCustomer.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -130,7 +130,7 @@ public class CustomerManagerPanel extends JPanel {
                 btnDelete.setVisible(true);
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
             btnSave.setVisible(false);
@@ -188,19 +188,19 @@ public class CustomerManagerPanel extends JPanel {
                 ps.setString(4, originalName);
 
                 if (ps.executeUpdate() > 0) {
-                    JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                    showSuccess(this, "Cập nhật thành công!");
                     originalName = txtName.getText();
                     loadListData();
                     btnSave.setVisible(false);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                showError(this, "Lỗi: " + ex.getMessage());
             }
         });
 
         // 5. Nút Xóa
         btnDelete.addActionListener(e -> {
-            if(JOptionPane.showConfirmDialog(this, "Xóa " + originalName + "?") == JOptionPane.YES_OPTION){
+            if(showConfirm(this, "Xóa " + originalName + "?")){
                 try (Connection con = DBConnection.getConnection()) {
                     PreparedStatement ps = con.prepareStatement("DELETE FROM Customers WHERE cus_name=?");
                     ps.setString(1, originalName);
@@ -209,7 +209,7 @@ public class CustomerManagerPanel extends JPanel {
                         clearForm();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                    showError(this, "Lỗi: " + ex.getMessage());
                 }
             }
         });
@@ -227,7 +227,7 @@ public class CustomerManagerPanel extends JPanel {
             }
             listCustomer.setModel(model);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -255,6 +255,10 @@ public class CustomerManagerPanel extends JPanel {
         txtAddress.setEnabled(enable);
     }
 
+    public void refreshData() {
+        loadListData();
+        clearForm();
+    }
 
     @FunctionalInterface
     interface DocumentUpdateListener { void update(DocumentEvent e); }

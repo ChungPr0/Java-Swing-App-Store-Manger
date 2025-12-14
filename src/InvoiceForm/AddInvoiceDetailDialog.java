@@ -62,6 +62,8 @@ public class AddInvoiceDetailDialog extends JDialog {
 
         mainPanel.add(buttonPanel);
         setContentPane(mainPanel);
+
+        getRootPane().setDefaultButton(btnAdd);
     }
 
     private void loadProductData() {
@@ -75,7 +77,7 @@ public class AddInvoiceDetailDialog extends JDialog {
                 cbProduct.addItem(new ComboItem(name + " (Tồn: " + count + ")", id));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -84,19 +86,19 @@ public class AddInvoiceDetailDialog extends JDialog {
             try {
                 String qtyText = txtQuantity.getText().trim();
                 if (qtyText.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Vui lòng nhập số lượng!");
+                    showError(this, "Vui lòng nhập số lượng!");
                     return;
                 }
 
                 int qty = Integer.parseInt(qtyText);
                 if (qty <= 0) {
-                    JOptionPane.showMessageDialog(this, "Số lượng phải > 0!");
+                    showError(this, "Số lượng phải > 0!");
                     return;
                 }
 
                 ComboItem item = (ComboItem) cbProduct.getSelectedItem();
                 if (item == null) {
-                    JOptionPane.showMessageDialog(this, "Chưa chọn sản phẩm!");
+                    showError(this, "Chưa chọn sản phẩm!");
                     return;
                 }
 
@@ -104,7 +106,7 @@ public class AddInvoiceDetailDialog extends JDialog {
                 int stock = Integer.parseInt(label.substring(label.lastIndexOf(": ") + 2, label.lastIndexOf(")")));
 
                 if (qty > stock) {
-                    JOptionPane.showMessageDialog(this, "Kho chỉ còn " + stock + ", không đủ hàng!");
+                    showError(this, "Kho chỉ còn " + stock + ", không đủ hàng!");
                     return;
                 }
 
@@ -114,7 +116,7 @@ public class AddInvoiceDetailDialog extends JDialog {
                 dispose();
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Số lượng phải là số nguyên!");
+                showError(this, "Số lượng phải là số nguyên!");
             }
         });
 

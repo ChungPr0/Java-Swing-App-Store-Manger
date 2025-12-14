@@ -69,6 +69,8 @@ public class EditInvoiceDetailDialog extends JDialog {
 
         mainPanel.add(buttonPanel);
         setContentPane(mainPanel);
+
+        getRootPane().setDefaultButton(btnSave);
     }
 
     private void addEvents() {
@@ -77,12 +79,12 @@ public class EditInvoiceDetailDialog extends JDialog {
                 int qty = Integer.parseInt(txtQuantity.getText().trim());
 
                 if (qty <= 0) {
-                    JOptionPane.showMessageDialog(this, "Số lượng phải lớn hơn 0!");
+                    showError(this, "Số lượng phải lớn hơn 0!");
                     return;
                 }
 
                 if (qty > limit) {
-                    JOptionPane.showMessageDialog(this,
+                    showError(this,
                             "Kho không đủ hàng!\n" +
                                     "Bạn chỉ có thể nhập tối đa: " + limit + "\n" +
                                     "(Do trong kho và đơn hàng cộng lại chỉ có bấy nhiêu)");
@@ -93,7 +95,7 @@ public class EditInvoiceDetailDialog extends JDialog {
                 this.isConfirmed = true;
                 dispose();
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Vui lòng nhập số hợp lệ!");
+                showError(this, "Vui lòng nhập số hợp lệ!");
             }
         });
 

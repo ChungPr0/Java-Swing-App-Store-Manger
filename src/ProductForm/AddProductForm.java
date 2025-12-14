@@ -21,19 +21,18 @@ public class AddProductForm extends JDialog {
     private boolean isAdded = false;
 
     public AddProductForm(Frame parent) {
-        super(parent, true); // Modal = true (chặn form cha)
-        this.setTitle("Thêm Sản Phẩm Mới"); // Đổi tiêu đề
+        super(parent, true);
+        this.setTitle("Thêm Sản Phẩm Mới");
         initUI();
         loadTypeData();
         loadSupplierData();
         addEvents();
 
-        this.pack(); // Tự động co giãn kích thước vừa với nội dung
-        this.setLocationRelativeTo(parent); // Hiện giữa form cha
-        this.setResizable(false); // Không cho kéo giãn lung tung
+        this.pack();
+        this.setLocationRelativeTo(parent);
+        this.setResizable(false);
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -69,8 +68,6 @@ public class AddProductForm extends JDialog {
         mainPanel.add(pSupplier);
         mainPanel.add(Box.createVerticalStrut(15));
 
-
-        // 3. Các nút bấm (Lưu / Hủy)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setBackground(Color.WHITE);
 
@@ -84,9 +81,10 @@ public class AddProductForm extends JDialog {
         mainPanel.add(buttonPanel);
 
         this.setContentPane(mainPanel);
+
+        getRootPane().setDefaultButton(btnSave);
     }
 
-    // --- CÁC HÀM LOGIC ---
     private void loadTypeData() {
         try (Connection con = DBConnection.getConnection()) {
             String sql = "SELECT type_name FROM ProductTypes";
@@ -98,7 +96,7 @@ public class AddProductForm extends JDialog {
                 cbType.addItem(rs.getString("type_name"));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(AddProductForm.this, "Lỗi: " + e.getMessage());
+            showError(AddProductForm.this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -113,19 +111,18 @@ public class AddProductForm extends JDialog {
                 cbSupplier.addItem(rs.getString("sup_name"));
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(AddProductForm.this, "Lỗi: " + e.getMessage());
+            showError(AddProductForm.this, "Lỗi: " + e.getMessage());
         }
     }
 
     private void addEvents() {
-        // Nút Lưu
         btnSave.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (txtName.getText().trim().isEmpty() ||
                         txtPrice.getText().trim().isEmpty() ||
                         txtCount.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(AddProductForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                    showError(AddProductForm.this, "Vui lòng nhập đầy đủ thông tin!");
                     return;
                 }
 
@@ -167,14 +164,14 @@ public class AddProductForm extends JDialog {
 
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
-                        JOptionPane.showMessageDialog(AddProductForm.this, "Thêm sản phẩm thành công!");
+                        showSuccess(AddProductForm.this, "Thêm sản phẩm thành công!");
                         isAdded = true;
                         dispose();
                     }
                 } catch (NumberFormatException nfe) {
-                    JOptionPane.showMessageDialog(AddProductForm.this, "Lỗi: Giá, Số lượng và ID phải là số hợp lệ!");
+                    showError(AddProductForm.this, "Lỗi: Giá, Số lượng và ID phải là số hợp lệ!");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(AddProductForm.this, "Lỗi CSDL: " + ex.getMessage());
+                    showError(AddProductForm.this, "Lỗi CSDL: " + ex.getMessage());
                 }
             }
         });

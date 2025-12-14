@@ -61,12 +61,12 @@ public class TypeEditorDialog extends JDialog {
         btnPanel.setBackground(Color.WHITE);
 
         if (typeID == -1) {
-            btnAction = createButton("Thêm Mới", Color.GREEN);
+            btnAction = createButton("Thêm Mới", new Color(46, 204, 113));
         } else {
-            btnAction = createButton("Lưu Thay Đổi", Color.GREEN);
+            btnAction = createButton("Lưu Thay Đổi", new Color(46, 204, 113));
         }
 
-        btnDelete = createButton("Xóa", Color.RED);
+        btnDelete = createButton("Xóa", new Color(231, 76, 60));
         btnCancel = createButton("Hủy", Color.GRAY);
 
         btnPanel.add(btnAction);
@@ -85,7 +85,7 @@ public class TypeEditorDialog extends JDialog {
         btnAction.addActionListener(e -> {
             String newName = txtName.getText().trim();
             if (newName.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Tên không được để trống!");
+                showError(this, "Tên không được để trống!");
                 return;
             }
 
@@ -95,7 +95,7 @@ public class TypeEditorDialog extends JDialog {
                     PreparedStatement ps = con.prepareStatement(sql);
                     ps.setString(1, newName);
                     if (ps.executeUpdate() > 0) {
-                        JOptionPane.showMessageDialog(this, "Thêm mới thành công!");
+                        showSuccess(this, "Thêm mới thành công!");
                         isUpdated = true;
                         dispose();
                     }
@@ -105,36 +105,32 @@ public class TypeEditorDialog extends JDialog {
                     ps.setString(1, newName);
                     ps.setInt(2, typeID);
                     if (ps.executeUpdate() > 0) {
-                        JOptionPane.showMessageDialog(this, "Cập nhật thành công!");
+                        showSuccess(this, "Cập nhật thành công!");
                         isUpdated = true;
                         dispose();
                     }
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                showError(this, "Lỗi: " + ex.getMessage());
             }
         });
 
         if (btnDelete != null) {
             btnDelete.addActionListener(e -> {
-                int confirm = JOptionPane.showConfirmDialog(this,
-                        "Xóa loại: " + currentName + "?\n(Không thể xóa nếu đang có sản phẩm thuộc loại này)",
-                        "Cảnh báo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-
-                if (confirm == JOptionPane.YES_OPTION) {
+                if (showConfirm(this, "Xóa loại: " + currentName + "?\n(Không thể xóa nếu đang có sản phẩm thuộc loại này)")) {
                     try (Connection con = DBConnection.getConnection()) {
                         String sql = "DELETE FROM ProductTypes WHERE type_ID = ?";
                         PreparedStatement ps = con.prepareStatement(sql);
                         ps.setInt(1, typeID);
                         if (ps.executeUpdate() > 0) {
-                            JOptionPane.showMessageDialog(this, "Đã xóa thành công!");
+                            showSuccess(this, "Đã xóa thành công!");
                             isUpdated = true;
                             dispose();
                         }
                     } catch (SQLIntegrityConstraintViolationException ex) {
-                        JOptionPane.showMessageDialog(this, "Không thể xóa vì đang có sản phẩm thuộc loại này!", "Lỗi ràng buộc", JOptionPane.ERROR_MESSAGE);
+                        showError(this, "Không thể xóa vì đang có sản phẩm thuộc loại này!");
                     } catch (Exception ex) {
-                        JOptionPane.showMessageDialog(this, "Lỗi: " + ex.getMessage());
+                        showError(this, "Lỗi: " + ex.getMessage());
                     }
                 }
             });

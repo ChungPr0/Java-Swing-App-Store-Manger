@@ -30,7 +30,6 @@ public class HomeManagerPanel extends JPanel {
         this.setBackground(Color.decode("#ecf0f1"));
         this.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // --- PHẦN 1: TIÊU ĐỀ & NÚT LÀM MỚI ---
         JPanel pHeader = new JPanel(new BorderLayout());
         pHeader.setOpaque(false);
 
@@ -42,32 +41,27 @@ public class HomeManagerPanel extends JPanel {
 
         this.add(pHeader, BorderLayout.NORTH);
 
-        // --- PHẦN 2: CENTER (CHỨA THẺ THỐNG KÊ + BẢNG) ---
         JPanel pCenter = new JPanel();
         pCenter.setLayout(new BoxLayout(pCenter, BoxLayout.Y_AXIS));
         pCenter.setOpaque(false);
 
-        // 2.1 Các thẻ thống kê (Stats Cards)
         JPanel pStats = new JPanel(new GridLayout(1, 4, 20, 0));
         pStats.setOpaque(false);
         pStats.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
 
-        // Tạo 4 thẻ
         lblRevenue = new JLabel("0 đ");
         lblProductCount = new JLabel("0");
         lblCustomerCount = new JLabel("0");
         lblOrderCount = new JLabel("0");
 
-        // Màu sắc: Xanh lá (Tiền), Xanh dương (SP), Cam (Khách), Tím (Đơn)
         pStats.add(createCard("DOANH THU", lblRevenue, new Color(46, 204, 113), "assets/icons/money.png"));
-        pStats.add(createCard("SẢN PHẨM", lblProductCount, new Color(52, 152, 219), "assets/icons/box.png"));
-        pStats.add(createCard("KHÁCH HÀNG", lblCustomerCount, new Color(243, 156, 18), "assets/icons/users.png"));
+            pStats.add(createCard("SẢN PHẨM", lblProductCount, new Color(52, 152, 219), "assets/icons/box.png"));
+        pStats.add(createCard("KHÁCH HÀNG", lblCustomerCount, new Color(243, 156, 18), "assets/icons/customer.png"));
         pStats.add(createCard("HÓA ĐƠN", lblOrderCount, new Color(155, 89, 182), "assets/icons/bill.png"));
 
         pCenter.add(pStats);
         pCenter.add(Box.createVerticalStrut(20));
 
-        // 2.2 Bảng đơn hàng gần đây
         JPanel pTableSection = new JPanel(new BorderLayout());
         pTableSection.setBackground(Color.WHITE);
         pTableSection.setBorder(BorderFactory.createCompoundBorder(
@@ -77,7 +71,6 @@ public class HomeManagerPanel extends JPanel {
 
         JLabel lblTableTitle = createTitleLabel("Đơn hàng gần đây");
 
-        // Cấu hình bảng
         String[] columns = {"Mã HĐ", "Khách Hàng", "Nhân Viên", "Tổng Tiền"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
@@ -99,12 +92,10 @@ public class HomeManagerPanel extends JPanel {
         this.add(pCenter, BorderLayout.CENTER);
     }
 
-    // --- LOGIC DỮ LIỆU ---
     private void loadDashboardData() {
         try (Connection con = DBConnection.getConnection()) {
             DecimalFormat df = new DecimalFormat("#,### VND");
 
-            // 1. Load Tổng Doanh Thu
             String sqlRev = "SELECT SUM(inv_price) FROM Invoices";
             ResultSet rsRev = con.createStatement().executeQuery(sqlRev);
             if (rsRev.next()) {
@@ -112,19 +103,15 @@ public class HomeManagerPanel extends JPanel {
                 lblRevenue.setText(df.format(rev));
             }
 
-            // 2. Load Tổng Sản Phẩm
             ResultSet rsPro = con.createStatement().executeQuery("SELECT COUNT(*) FROM Products");
             if (rsPro.next()) lblProductCount.setText(String.valueOf(rsPro.getInt(1)));
 
-            // 3. Load Tổng Khách Hàng
             ResultSet rsCus = con.createStatement().executeQuery("SELECT COUNT(*) FROM Customers");
             if (rsCus.next()) lblCustomerCount.setText(String.valueOf(rsCus.getInt(1)));
 
-            // 4. Load Tổng Hóa Đơn
             ResultSet rsInv = con.createStatement().executeQuery("SELECT COUNT(*) FROM Invoices");
             if (rsInv.next()) lblOrderCount.setText(String.valueOf(rsInv.getInt(1)));
 
-            // 5. Load Bảng Đơn Hàng Gần Đây (Lấy 10 cái mới nhất theo inv_ID)
             tableModel.setRowCount(0);
             String sqlTable = "SELECT i.inv_ID, c.cus_name, s.sta_name, i.inv_price " +
                     "FROM Invoices i " +
@@ -143,7 +130,7 @@ public class HomeManagerPanel extends JPanel {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Lỗi: " + e.getMessage());
+            showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
@@ -162,16 +149,19 @@ public class HomeManagerPanel extends JPanel {
 
                         Window win = SwingUtilities.getWindowAncestor(HomeManagerPanel.this);
 
-                        if (win instanceof DashBoard) {
-                            DashBoard dashboard = (DashBoard) win;
+                        if (win instanceof DashBoard dashboard) {
                             dashboard.showInvoiceAndLoad(invID);
                         }
 
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        showError(HomeManagerPanel.this, "Lỗi: " + ex.getMessage());
                     }
                 }
             }
         });
+    }
+
+    public void refreshData() {
+        loadDashboardData();
     }
 }
