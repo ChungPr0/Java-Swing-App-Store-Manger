@@ -39,7 +39,7 @@ public class StaffManagerPanel extends JPanel {
 
         txtSearch = new JTextField();
         JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch,"Tìm kiếm");
-        btnAdd = createButton("Thêm", Color.GRAY);
+        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
         searchPanel.add(txtSearch, BorderLayout.CENTER);
         searchPanel.add(btnAdd, BorderLayout.EAST);
 
@@ -86,6 +86,7 @@ public class StaffManagerPanel extends JPanel {
 
         // Panel Nút bấm (Lưu / Xóa)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Color.WHITE);
         btnSave = createButton("Lưu thay đổi", Color.GREEN);
         btnDelete = createButton("Xóa nhân viên", Color.RED);
 

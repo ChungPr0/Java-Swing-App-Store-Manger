@@ -3,8 +3,25 @@ package JDBCUntils;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class Style {
+    public static JLabel createMenuLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        label.setForeground(Color.WHITE);
+        label.setOpaque(true);
+        label.setBackground(Color.decode("#2c3e50"));
+        label.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        label.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) { label.setBackground(Color.decode("#1abc9c")); }
+            public void mouseExited(MouseEvent e) { label.setBackground(Color.decode("#2c3e50")); }
+        });
+        return label;
+    }
 
     public static JLabel createHeaderLabel(String text) {
         JLabel label = new JLabel(text);
@@ -40,7 +57,39 @@ public class Style {
         return p;
     }
 
-    public static JPanel createComboBoxWithLabel(JComboBox<String> box, String labelText, JButton btn1, JButton btn2) {
+    public static JPanel createTextFieldWithLabelType2(JTextField tf, String labelText) {
+        JPanel p = new JPanel(new BorderLayout(0, 0));
+        p.setBackground(Color.WHITE);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        p.setPreferredSize(new Dimension(300, 40));
+
+        Color borderColor = Color.decode("#bdc3c7");
+        Color labelBgColor = Color.decode("#ecf0f1");
+        Color labelTextColor = Color.decode("#2c3e50");
+
+        JLabel lbl = new JLabel(labelText);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lbl.setForeground(labelTextColor);
+        lbl.setBackground(labelBgColor);
+        lbl.setOpaque(true);
+        lbl.setHorizontalAlignment(SwingConstants.CENTER);
+
+        lbl.setPreferredSize(new Dimension(120, 0));
+
+        lbl.setBorder(new javax.swing.border.MatteBorder(1, 1, 1, 0, borderColor));
+        tf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        tf.setBackground(Color.WHITE);
+        tf.setBorder(new javax.swing.border.CompoundBorder(
+                new javax.swing.border.MatteBorder(1, 0, 1, 1, borderColor),
+                new javax.swing.border.EmptyBorder(5, 10, 5, 10)
+        ));
+        p.add(lbl, BorderLayout.WEST);
+        p.add(tf, BorderLayout.CENTER);
+
+        return p;
+    }
+
+    public static JPanel createComboBoxWithLabel(JComboBox box, String labelText, JButton btn1, JButton btn2) {
         JPanel p = new JPanel(new BorderLayout(5, 5));
         p.setBackground(Color.WHITE);
         p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
@@ -72,11 +121,11 @@ public class Style {
         return p;
     }
 
-    public static JPanel createComboBoxWithLabel(JComboBox<String> box, String labelText) {
+    public static JPanel createComboBoxWithLabel(JComboBox box, String labelText) {
         return createComboBoxWithLabel(box, labelText, null, null);
     }
 
-    public static JPanel createComboBoxWithLabel(JComboBox<String> box, String labelText, JButton btn) {
+    public static JPanel createComboBoxWithLabel(JComboBox box, String labelText, JButton btn) {
         return createComboBoxWithLabel(box, labelText, btn, null);
     }
 
@@ -147,23 +196,27 @@ public class Style {
         return btn;
     }
 
-    public static JButton createIconButton(String iconPath) {
-        JButton btn = new JButton();
+    public static JButton createSmallButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
 
-        try {
-            ImageIcon originalIcon = new ImageIcon(iconPath);
-            Image img = originalIcon.getImage().getScaledInstance(30, 30, Image.SCALE_DEFAULT);
-            btn.setIcon(new ImageIcon(img));
-        } catch (Exception e) {
-            btn.setText("?");
-            System.err.println("Lỗi load ảnh: " + iconPath);
-        }
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
 
-        btn.setPreferredSize(new Dimension(30, 30));
-        btn.setBorderPainted(false);
-        btn.setContentAreaFilled(false);
+        btn.setPreferredSize(new Dimension(80, 30));
+
         btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setOpaque(true);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(bg.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(bg);
+            }
+        });
 
         return btn;
     }

@@ -39,7 +39,7 @@ public class CustomerManagerPanel extends JPanel {
 
         txtSearch = new JTextField();
         JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch,"Tìm kiếm");
-        btnAdd = createButton("Thêm", Color.GRAY);
+        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
         searchPanel.add(txtSearch, BorderLayout.CENTER);
         searchPanel.add(btnAdd, BorderLayout.EAST);
 
@@ -78,6 +78,7 @@ public class CustomerManagerPanel extends JPanel {
 
         // Panel Nút bấm (Lưu / Xóa)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Color.WHITE);
         btnSave = createButton("Lưu thay đổi", Color.GREEN);
         btnDelete = createButton("Xóa khách hàng", Color.RED);
 
@@ -167,13 +168,13 @@ public class CustomerManagerPanel extends JPanel {
 
         // 3. Nút Thêm
         btnAdd.addActionListener(e -> {
-//            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
-//            AddCustomerForm addCustomerForm = new AddCustomerForm(parentFrame);
-//            addCustomerForm.setVisible(true);
-//
-//            if (addCustomerForm.isAddedSuccess()) {
-//                loadListData();
-//            }
+            JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            AddCustomerForm addCustomerForm = new AddCustomerForm(parentFrame);
+            addCustomerForm.setVisible(true);
+
+            if (addCustomerForm.isAddedSuccess()) {
+                loadListData();
+            }
         });
 
         // 4. Nút Lưu

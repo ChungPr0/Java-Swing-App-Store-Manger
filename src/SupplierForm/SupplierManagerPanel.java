@@ -20,10 +20,10 @@ public class SupplierManagerPanel extends JPanel {
     private boolean isDataLoading = false;
 
     public SupplierManagerPanel() {
-        initUI();           //Vẽ giao diện
-        loadListData();     //Tải danh sách
-        addEvents();        //Gán sự kiện
-        addChangeListeners(); //Gán sự kiện hiện nút Lưu
+        initUI();
+        loadListData();
+        addEvents();
+        addChangeListeners();
     }
 
     // --- PHẦN GIAO DIỆN (UI) ---
@@ -39,7 +39,7 @@ public class SupplierManagerPanel extends JPanel {
 
         txtSearch = new JTextField();
         JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch,"Tìm kiếm");
-        btnAdd = createButton("Thêm", Color.GRAY);
+        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
         searchPanel.add(txtSearch, BorderLayout.CENTER);
         searchPanel.add(btnAdd, BorderLayout.EAST);
 
@@ -77,6 +77,7 @@ public class SupplierManagerPanel extends JPanel {
 
         // Panel Nút bấm (Lưu / Xóa)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Color.WHITE);
         btnSave = createButton("Lưu thay đổi", Color.GREEN);
         btnDelete = createButton("Xóa Nhà Cung Cấp", Color.RED);
 

@@ -1,6 +1,6 @@
 package HomeForm;
 
-import InvoiceForm.InvoiceDetailDialog;
+import Main.DashBoard;
 import JDBCUntils.DBConnection;
 
 import javax.swing.*;
@@ -16,6 +16,7 @@ import static JDBCUntils.Style.*;
 public class HomeManagerPanel extends JPanel {
     private JLabel lblRevenue, lblProductCount, lblCustomerCount, lblOrderCount;
     private JTable tableRecent;
+    private JButton btnRefresh;
     private DefaultTableModel tableModel;
 
     public HomeManagerPanel() {
@@ -34,9 +35,7 @@ public class HomeManagerPanel extends JPanel {
         pHeader.setOpaque(false);
 
         JLabel lblTitle = createHeaderLabel("TỔNG QUAN CỬA HÀNG");
-        JButton btnRefresh = createButton("Làm mới dữ liệu", Color.GRAY);
-
-        btnRefresh.addActionListener(e -> loadDashboardData());
+        btnRefresh = createButton("Làm mới dữ liệu", Color.GRAY);
 
         pHeader.add(lblTitle, BorderLayout.WEST);
         pHeader.add(btnRefresh, BorderLayout.EAST);
@@ -60,10 +59,10 @@ public class HomeManagerPanel extends JPanel {
         lblOrderCount = new JLabel("0");
 
         // Màu sắc: Xanh lá (Tiền), Xanh dương (SP), Cam (Khách), Tím (Đơn)
-        pStats.add(createCard("DOANH THU", lblRevenue, new Color(46, 204, 113), "asset/icons/money.png"));
-        pStats.add(createCard("SẢN PHẨM", lblProductCount, new Color(52, 152, 219), "asset/icons/box.png"));
-        pStats.add(createCard("KHÁCH HÀNG", lblCustomerCount, new Color(243, 156, 18), "asset/icons/users.png"));
-        pStats.add(createCard("HÓA ĐƠN", lblOrderCount, new Color(155, 89, 182), "asset/icons/bill.png"));
+        pStats.add(createCard("DOANH THU", lblRevenue, new Color(46, 204, 113), "assets/icons/money.png"));
+        pStats.add(createCard("SẢN PHẨM", lblProductCount, new Color(52, 152, 219), "assets/icons/box.png"));
+        pStats.add(createCard("KHÁCH HÀNG", lblCustomerCount, new Color(243, 156, 18), "assets/icons/users.png"));
+        pStats.add(createCard("HÓA ĐƠN", lblOrderCount, new Color(155, 89, 182), "assets/icons/bill.png"));
 
         pCenter.add(pStats);
         pCenter.add(Box.createVerticalStrut(20));
@@ -149,7 +148,8 @@ public class HomeManagerPanel extends JPanel {
     }
 
     private void addEvents() {
-        // Sự kiện click vào bảng
+        btnRefresh.addActionListener(_ -> loadDashboardData());
+
         tableRecent.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -157,11 +157,19 @@ public class HomeManagerPanel extends JPanel {
                     int row = tableRecent.getSelectedRow();
                     if (row == -1) return;
 
-                    int invID = Integer.parseInt(tableRecent.getValueAt(row, 0).toString());
+                    try {
+                        int invID = Integer.parseInt(tableRecent.getValueAt(row, 0).toString());
 
-                    JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(HomeManagerPanel.this);
-                    InvoiceDetailDialog dialog = new InvoiceDetailDialog(parent, invID);
-                    dialog.setVisible(true);
+                        Window win = SwingUtilities.getWindowAncestor(HomeManagerPanel.this);
+
+                        if (win instanceof DashBoard) {
+                            DashBoard dashboard = (DashBoard) win;
+                            dashboard.showInvoiceAndLoad(invID);
+                        }
+
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
         });

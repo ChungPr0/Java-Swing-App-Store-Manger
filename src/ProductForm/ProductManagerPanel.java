@@ -44,7 +44,7 @@ public class ProductManagerPanel extends JPanel {
 
         txtSearch = new JTextField();
         JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch,"Tìm kiếm");
-        btnAdd = createButton("Thêm", Color.GRAY);
+        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
         searchPanel.add(txtSearch, BorderLayout.CENTER);
         searchPanel.add(btnAdd, BorderLayout.EAST);
 
@@ -81,8 +81,8 @@ public class ProductManagerPanel extends JPanel {
 
         cbType = new JComboBox<>();
 
-        btnEditType = createButton("Sửa", Color.GRAY);
-        btnAddType = createButton("Thêm", Color.GRAY);
+        btnEditType = createSmallButton("Sửa", Color.LIGHT_GRAY);
+        btnAddType = createSmallButton("Thêm", Color.LIGHT_GRAY);
 
         JPanel pType = createComboBoxWithLabel(cbType,"Phân Loại:", btnEditType, btnAddType);
         rightPanel.add(pType);
@@ -95,6 +95,7 @@ public class ProductManagerPanel extends JPanel {
 
         // Panel Nút bấm
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.setBackground(Color.WHITE);
         btnSave = createButton("Lưu thay đổi", Color.GREEN);
         btnDelete = createButton("Xóa sản phẩm", Color.RED);
 

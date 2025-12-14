@@ -1,4 +1,4 @@
-package SupplierForm;
+package CustomerForm;
 
 import JDBCUntils.DBConnection;
 
@@ -12,15 +12,15 @@ import java.sql.PreparedStatement;
 
 import static JDBCUntils.Style.*;
 
-public class AddSupplierForm extends JDialog {
+public class AddCustomerForm extends JDialog {
     private JTextField txtName, txtPhone, txtAddress;
     private JButton btnSave, btnCancel;
 
     private boolean isAdded = false;
 
-    public AddSupplierForm(Frame parent) {
+    public AddCustomerForm(Frame parent) {
         super(parent, true); // Modal = true (chặn form cha)
-        this.setTitle("Thêm Nhà Cung Cấp Mới");
+        this.setTitle("Thêm Khách Hàng Mới");
         initUI();
         addEvents();
 
@@ -41,7 +41,7 @@ public class AddSupplierForm extends JDialog {
         mainPanel.add(Box.createVerticalStrut(20));
 
         txtName = new JTextField();
-        JPanel pName = createTextFieldWithLabel(txtName, "Tên Nhà Cung Cấp:");
+        JPanel pName = createTextFieldWithLabel(txtName, "Tên khách hàng:");
         mainPanel.add(pName);
         mainPanel.add(Box.createVerticalStrut(15));
 
@@ -76,12 +76,12 @@ public class AddSupplierForm extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(AddSupplierForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                    JOptionPane.showMessageDialog(CustomerForm.AddCustomerForm.this, "Vui lòng nhập đầy đủ thông tin!");
                     return;
                 }
 
                 try (Connection con = DBConnection.getConnection()) {
-                    String sql = "INSERT INTO Suppliers (sup_name, sup_phone, sup_address) VALUES (?, ?, ?)";
+                    String sql = "INSERT INTO Customers (cus_name, cus_phone, cus_address) VALUES (?, ?, ?)";
 
                     PreparedStatement ps = con.prepareStatement(sql);
                     ps.setString(1, txtName.getText().trim());
@@ -90,12 +90,12 @@ public class AddSupplierForm extends JDialog {
 
                     int rows = ps.executeUpdate();
                     if (rows > 0) {
-                        JOptionPane.showMessageDialog(AddSupplierForm.this, "Thêm thành công!");
+                        JOptionPane.showMessageDialog(CustomerForm.AddCustomerForm.this, "Thêm thành công!");
                         isAdded = true;
                         dispose();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(AddSupplierForm.this, "Lỗi: " + ex.getMessage());
+                    JOptionPane.showMessageDialog(CustomerForm.AddCustomerForm.this, "Lỗi: " + ex.getMessage());
                 }
             }
         });

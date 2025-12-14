@@ -1,3 +1,5 @@
+package Main;
+
 import CustomerForm.CustomerManagerPanel;
 import HomeForm.HomeManagerPanel;
 import ProductForm.ProductManagerPanel;
@@ -9,12 +11,16 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import static JDBCUntils.Style.createMenuLabel;
+
 public class DashBoard extends JFrame {
     private JPanel mainContainer;
     private JPanel menuPanel;
     private JPanel contentPanel;
-    private JLabel btnHome, btnStaff, btnSupplier, btnCustomer, btnProduct;
+    private JLabel btnHome, btnStaff, btnSupplier, btnCustomer, btnProduct, btnInvoice;
     private CardLayout cardLayout;
+
+    private InvoiceForm.InvoiceManagerPanel invoicePanel;
 
     public DashBoard() {
         super("Quản Lý Cửa Hàng");
@@ -37,12 +43,14 @@ public class DashBoard extends JFrame {
         btnSupplier = createMenuLabel("NHÀ CUNG CẤP");
         btnCustomer = createMenuLabel("KHÁCH HÀNG");
         btnProduct = createMenuLabel("SẢN PHẨM");
+        btnInvoice = createMenuLabel("HÓA ĐƠN");
 
         menuPanel.add(btnHome);
         menuPanel.add(btnStaff);
         menuPanel.add(btnSupplier);
         menuPanel.add(btnCustomer);
         menuPanel.add(btnProduct);
+        menuPanel.add(btnInvoice);
 
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
@@ -52,27 +60,13 @@ public class DashBoard extends JFrame {
         contentPanel.add(new SupplierManagerPanel(), "SUPPLIER");
         contentPanel.add(new CustomerManagerPanel(), "CUSTOMER");
         contentPanel.add(new ProductManagerPanel(), "PRODUCT");
+        invoicePanel = new InvoiceForm.InvoiceManagerPanel();
+        contentPanel.add(invoicePanel, "INVOICE");
 
         mainContainer.add(menuPanel, BorderLayout.NORTH);
         mainContainer.add(contentPanel, BorderLayout.CENTER);
 
         this.setContentPane(mainContainer);
-    }
-
-    private JLabel createMenuLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        label.setForeground(Color.WHITE);
-        label.setOpaque(true);
-        label.setBackground(Color.decode("#2c3e50"));
-        label.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
-        label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        label.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) { label.setBackground(Color.decode("#1abc9c")); }
-            public void mouseExited(MouseEvent e) { label.setBackground(Color.decode("#2c3e50")); }
-        });
-        return label;
     }
 
     private void addEvents() {
@@ -105,6 +99,19 @@ public class DashBoard extends JFrame {
                 cardLayout.show(contentPanel, "PRODUCT");
             }
         });
+
+        btnInvoice.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                cardLayout.show(contentPanel, "INVOICE");
+            }
+        });
+    }
+
+    public void showInvoiceAndLoad(int invID) {
+        cardLayout.show(contentPanel, "INVOICE");
+        if (invoicePanel != null) {
+            invoicePanel.loadDetail(invID);
+        }
     }
 
     public static void main(String[] args) {
