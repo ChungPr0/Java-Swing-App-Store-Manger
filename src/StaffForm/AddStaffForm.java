@@ -5,8 +5,6 @@ import JDBCUntils.DBConnection;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -52,37 +50,32 @@ public class AddStaffForm extends JDialog {
         cbYear = new JComboBox<>();
         JPanel datePanel = createDatePanel("Ngày sinh:", cbDay, cbMonth, cbYear);
         mainPanel.add(datePanel);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(16));
 
         txtPhone = new JTextField();
         JPanel pPhone = createTextFieldWithLabel(txtPhone, "Số điện thoại:");
         mainPanel.add(pPhone);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(16));
 
         txtAddress = new JTextField();
         JPanel pAddress = createTextFieldWithLabel(txtAddress, "Địa chỉ:");
         mainPanel.add(pAddress);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(16));
 
         txtUsername = new JTextField();
         JPanel pUser = createTextFieldWithLabel(txtUsername, "Tài khoản đăng nhập:");
         mainPanel.add(pUser);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(16));
 
         txtPassword = new JTextField();
         JPanel pPass = createTextFieldWithLabel(txtPassword, "Mật khẩu:");
         mainPanel.add(pPass);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(16));
 
-        chkIsAdmin = new JCheckBox("Là Quản lý (Admin)");
-        chkIsAdmin.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        chkIsAdmin.setBackground(Color.WHITE);
-        chkIsAdmin.setForeground(Color.decode("#2c3e50"));
+        chkIsAdmin = new JCheckBox();
+        JPanel pRoleWrapper = createCheckBoxWithLabel(chkIsAdmin, "Vai trò:", "QUẢN TRỊ VIÊN");
 
-        JPanel pRole = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        pRole.setBackground(Color.WHITE);
-        pRole.add(chkIsAdmin);
-        mainPanel.add(pRole);
+        mainPanel.add(pRoleWrapper);
         mainPanel.add(Box.createVerticalStrut(20));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
@@ -101,46 +94,43 @@ public class AddStaffForm extends JDialog {
     }
 
     private void addEvents() {
-        btnSave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (txtName.getText().trim().isEmpty() || txtUsername.getText().trim().isEmpty() || txtPassword.getText().trim().isEmpty()) {
-                    showError(AddStaffForm.this, "Vui lòng nhập đầy đủ thông tin!");
-                    return;
+        btnSave.addActionListener(_ -> {
+            if (txtName.getText().trim().isEmpty() || txtUsername.getText().trim().isEmpty() || txtPassword.getText().trim().isEmpty()) {
+                showError(AddStaffForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            try (Connection con = DBConnection.getConnection()) {
+                String strDate = cbYear.getSelectedItem() + "-" + cbMonth.getSelectedItem() + "-" + cbDay.getSelectedItem();
+
+                String sql = "INSERT INTO Staffs (sta_name, sta_date_of_birth, sta_phone, sta_address, sta_username, sta_password, sta_role) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, txtName.getText().trim());
+                ps.setString(2, strDate);
+                ps.setString(3, txtPhone.getText().trim());
+                ps.setString(4, txtAddress.getText().trim());
+
+                ps.setString(5, txtUsername.getText().trim());
+                ps.setString(6, txtPassword.getText().trim());
+                ps.setString(7, chkIsAdmin.isSelected() ? "Admin" : "Staff");
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    showSuccess(AddStaffForm.this, "Thêm nhân viên thành công!");
+                    isAdded = true;
+                    dispose();
                 }
-
-                try (Connection con = DBConnection.getConnection()) {
-                    String strDate = cbYear.getSelectedItem() + "-" + cbMonth.getSelectedItem() + "-" + cbDay.getSelectedItem();
-
-                    String sql = "INSERT INTO Staffs (sta_name, sta_date_of_birth, sta_phone, sta_address, sta_username, sta_password, sta_role) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
-                    PreparedStatement ps = con.prepareStatement(sql);
-                    ps.setString(1, txtName.getText().trim());
-                    ps.setString(2, strDate);
-                    ps.setString(3, txtPhone.getText().trim());
-                    ps.setString(4, txtAddress.getText().trim());
-
-                    ps.setString(5, txtUsername.getText().trim());
-                    ps.setString(6, txtPassword.getText().trim());
-                    ps.setString(7, chkIsAdmin.isSelected() ? "Admin" : "Staff");
-
-                    int rows = ps.executeUpdate();
-                    if (rows > 0) {
-                        showSuccess(AddStaffForm.this, "Thêm nhân viên thành công!");
-                        isAdded = true;
-                        dispose();
-                    }
-                } catch (Exception ex) {
-                    if (ex.getMessage().contains("Duplicate")) {
-                        showError(AddStaffForm.this, "Tài khoản '" + txtUsername.getText() + "' đã tồn tại!");
-                    } else {
-                        showError(AddStaffForm.this, "Lỗi: " + ex.getMessage());
-                    }
+            } catch (Exception ex) {
+                if (ex.getMessage().contains("Duplicate")) {
+                    showError(AddStaffForm.this, "Tài khoản '" + txtUsername.getText() + "' đã tồn tại!");
+                } else {
+                    showError(AddStaffForm.this, "Lỗi: " + ex.getMessage());
                 }
             }
         });
 
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
 
     private void initComboBoxData() {

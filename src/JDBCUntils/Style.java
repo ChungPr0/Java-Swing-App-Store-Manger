@@ -7,6 +7,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+/** @noinspection rawtypes*/
 public class Style {
     public static JLabel createMenuLabel(String text) {
         JLabel label = new JLabel(text);
@@ -62,6 +63,30 @@ public class Style {
         return p;
     }
 
+    public static JPanel createPasswordFieldWithLabel(JPasswordField pf, String labelText) {
+        JPanel p = new JPanel(new BorderLayout(5, 5));
+        p.setBackground(Color.WHITE);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        p.add(createTitleLabel(labelText), BorderLayout.NORTH);
+
+        pf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        pf.setPreferredSize(new Dimension(0, 35));
+
+        pf.setEchoChar('•');
+
+        pf.setBorder(new javax.swing.border.CompoundBorder(
+                new javax.swing.border.LineBorder(Color.decode("#bdc3c7"), 1),
+                new javax.swing.border.EmptyBorder(5, 10, 5, 10)
+        ));
+
+        installFocusAnimation(pf);
+
+        p.add(pf, BorderLayout.CENTER);
+
+        return p;
+    }
+
     public static JPanel createComboBoxWithLabel(JComboBox box, String labelText, JButton btn1, JButton btn2) {
         JPanel p = new JPanel(new BorderLayout(5, 5));
         p.setBackground(Color.WHITE);
@@ -75,6 +100,7 @@ public class Style {
         box.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         box.setBackground(Color.WHITE);
         box.setPreferredSize(new Dimension(0, 35));
+        box.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JPanel btnPanel = new JPanel();
         btnPanel.setLayout(new BoxLayout(btnPanel, BoxLayout.X_AXIS));
@@ -111,23 +137,26 @@ public class Style {
         return createComboBoxWithLabel(box, labelText, btn, null);
     }
 
-    public static JPanel createTextFieldWithPlaceholder(JTextField textField, String labelText) {
+    // Hàm tạo: Label ở trên + [TextField - Button] ở dưới
+    public static JPanel createSearchWithButtonPanel(JTextField textField, JButton btnSort, String labelText) {
+        JPanel pRoot = new JPanel(new BorderLayout(5, 5));
+        pRoot.setBackground(Color.WHITE);
+        pRoot.setMaximumSize(new Dimension(Integer.MAX_VALUE, 65));
 
+        pRoot.add(createTitleLabel(labelText), BorderLayout.NORTH);
 
-        JPanel p = new JPanel(new BorderLayout(5, 5));
+        JPanel pInputContainer = new JPanel(new BorderLayout(5, 0));
+        pInputContainer.setBackground(Color.WHITE);
+
         textField.setText("Tìm kiếm...");
         textField.setForeground(Color.GRAY);
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
-        p.add(createTitleLabel(labelText), BorderLayout.NORTH);
         textField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         textField.setPreferredSize(new Dimension(0, 35));
-
         textField.setBorder(new javax.swing.border.CompoundBorder(
                 new javax.swing.border.LineBorder(Color.decode("#bdc3c7"), 1),
                 new javax.swing.border.EmptyBorder(5, 10, 5, 10)
         ));
-
-        p.add(textField, BorderLayout.CENTER);
+        installFocusAnimation(textField);
 
         textField.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
@@ -137,7 +166,6 @@ public class Style {
                     textField.setForeground(Color.BLACK);
                 }
             }
-
             @Override
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (textField.getText().isEmpty()) {
@@ -147,7 +175,21 @@ public class Style {
             }
         });
 
-        return p;
+        btnSort.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        btnSort.setBackground(Color.LIGHT_GRAY);
+        btnSort.setForeground(Color.WHITE);
+        btnSort.setPreferredSize(new Dimension(60, 30));
+        btnSort.setFocusPainted(false);
+        btnSort.setBorderPainted(false);
+        btnSort.setOpaque(true);
+        btnSort.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        pInputContainer.add(textField, BorderLayout.CENTER);
+        pInputContainer.add(btnSort, BorderLayout.EAST);
+
+        pRoot.add(pInputContainer, BorderLayout.CENTER);
+
+        return pRoot;
     }
 
     public static JLabel createSeparator() {
@@ -155,6 +197,29 @@ public class Style {
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lbl.setForeground(Color.GRAY);
         return lbl;
+    }
+
+    public static JPanel createCheckBoxWithLabel(JCheckBox chk, String labelText, String textContent) {
+        JPanel p = new JPanel(new BorderLayout(5, 5));
+        p.setBackground(Color.WHITE);
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+        p.add(createTitleLabel(labelText), BorderLayout.NORTH);
+
+        JPanel pContent = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        pContent.setBackground(Color.WHITE);
+        pContent.setPreferredSize(new Dimension(0, 35));
+
+        chk.setText(textContent);
+        chk.setBackground(Color.WHITE);
+        chk.setFocusPainted(false);
+        chk.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        chk.setForeground(Color.decode("#666666"));
+        chk.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        pContent.add(chk);
+        p.add(pContent, BorderLayout.CENTER);
+
+        return p;
     }
 
     public static JButton createButton(String text, Color bgColor) {
@@ -325,12 +390,12 @@ public class Style {
         btnNo.setPreferredSize(new Dimension(110, 35));
         btnNo.setBorder(BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1));
 
-        btnYes.addActionListener(e -> {
+        btnYes.addActionListener(_ -> {
             result[0] = true;
             dialog.dispose();
         });
 
-        btnNo.addActionListener(e -> {
+        btnNo.addActionListener(_ -> {
             result[0] = false;
             dialog.dispose();
         });
@@ -381,24 +446,7 @@ public class Style {
 
         ((JPanel)dialog.getContentPane()).setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
 
-        JPanel pHeader = new JPanel(new BorderLayout());
-        pHeader.setBackground(mainColor);
-        pHeader.setPreferredSize(new Dimension(0, 40));
-        pHeader.setBorder(new javax.swing.border.EmptyBorder(0, 15, 0, 15));
-
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblTitle.setForeground(Color.WHITE);
-        pHeader.add(lblTitle, BorderLayout.WEST);
-
-        JLabel lblClose = new JLabel("×");
-        lblClose.setFont(new Font("Arial", Font.BOLD, 28));
-        lblClose.setForeground(Color.WHITE);
-        lblClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblClose.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent e) { dialog.dispose(); }
-        });
-        pHeader.add(lblClose, BorderLayout.EAST);
+        JPanel pHeader = getJPanel(mainColor, title, dialog);
 
         JPanel pContent = new JPanel(new BorderLayout());
         pContent.setBackground(Color.WHITE);
@@ -430,7 +478,7 @@ public class Style {
         JButton btnOK = createButton("Đồng ý", mainColor);
         btnOK.setPreferredSize(new Dimension(110, 35));
 
-        btnOK.addActionListener(e -> dialog.dispose());
+        btnOK.addActionListener(_ -> dialog.dispose());
 
         btnOK.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) { btnOK.setBackground(mainColor.brighter()); }
@@ -450,10 +498,33 @@ public class Style {
         dialog.setVisible(true);
     }
 
+    private static JPanel getJPanel(Color mainColor, String title, JDialog dialog) {
+        JPanel pHeader = new JPanel(new BorderLayout());
+        pHeader.setBackground(mainColor);
+        pHeader.setPreferredSize(new Dimension(0, 40));
+        pHeader.setBorder(new EmptyBorder(0, 15, 0, 15));
+
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lblTitle.setForeground(Color.WHITE);
+        pHeader.add(lblTitle, BorderLayout.WEST);
+
+        JLabel lblClose = new JLabel("×");
+        lblClose.setFont(new Font("Arial", Font.BOLD, 28));
+        lblClose.setForeground(Color.WHITE);
+        lblClose.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        lblClose.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) { dialog.dispose(); }
+        });
+        pHeader.add(lblClose, BorderLayout.EAST);
+        return pHeader;
+    }
+
     private static void createStyleComboBox(JComboBox<String> box) {
         box.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         box.setBackground(Color.WHITE);
         box.setPreferredSize(new Dimension(80, 35));
+        box.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
     private static void installFocusAnimation(JTextField tf) {
@@ -477,7 +548,7 @@ public class Style {
             private void runAnimation(boolean isEnter) {
                 if (timer != null && timer.isRunning()) timer.stop();
 
-                timer = new javax.swing.Timer(10, evt -> {
+                timer = new javax.swing.Timer(10, _ -> {
                     if (isEnter) {
                         progress += 0.1f;
                         if (progress >= 1f) { progress = 1f; timer.stop(); }

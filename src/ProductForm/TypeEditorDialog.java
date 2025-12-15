@@ -15,18 +15,16 @@ public class TypeEditorDialog extends JDialog {
     private JTextField txtName;
     private JButton btnAction, btnDelete, btnCancel;
 
-    private int typeID = -1;
+    private final int typeID;
     private String currentName = "";
     private boolean isUpdated = false;
 
-    // --- CONSTRUCTOR 1: Dùng cho THÊM MỚI (Không cần ID) ---
     public TypeEditorDialog(Frame parent) {
         super(parent, true);
         this.typeID = -1;
         setupDialog(parent, "THÊM PHÂN LOẠI SẢN PHẨM");
     }
 
-    // --- CONSTRUCTOR 2: Dùng cho SỬA/XÓA (Có ID và Tên cũ) ---
     public TypeEditorDialog(Frame parent, int typeID, String currentName) {
         super(parent, true);
         this.typeID = typeID;
@@ -82,7 +80,7 @@ public class TypeEditorDialog extends JDialog {
     }
 
     private void addEvents() {
-        btnAction.addActionListener(e -> {
+        btnAction.addActionListener(_ -> {
             String newName = txtName.getText().trim();
             if (newName.isEmpty()) {
                 showError(this, "Tên không được để trống!");
@@ -116,7 +114,7 @@ public class TypeEditorDialog extends JDialog {
         });
 
         if (btnDelete != null) {
-            btnDelete.addActionListener(e -> {
+            btnDelete.addActionListener(_ -> {
                 if (showConfirm(this, "Xóa loại: " + currentName + "?\n(Không thể xóa nếu đang có sản phẩm thuộc loại này)")) {
                     try (Connection con = DBConnection.getConnection()) {
                         String sql = "DELETE FROM ProductTypes WHERE type_ID = ?";
@@ -135,10 +133,8 @@ public class TypeEditorDialog extends JDialog {
                 }
             });
         }
-
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
-
 
     public boolean isUpdated() {
         return isUpdated;

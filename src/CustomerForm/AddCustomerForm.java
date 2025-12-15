@@ -5,8 +5,6 @@ import JDBCUntils.DBConnection;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -72,35 +70,32 @@ public class AddCustomerForm extends JDialog {
     }
 
     private void addEvents() {
-        btnSave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
-                    showError(CustomerForm.AddCustomerForm.this, "Vui lòng nhập đầy đủ thông tin!");
-                    return;
+        btnSave.addActionListener(_ -> {
+            if (txtName.getText().trim().isEmpty()) {
+                showError(AddCustomerForm.this, "Vui lòng nhập tên khách hàng!");
+                return;
+            }
+
+            try (Connection con = DBConnection.getConnection()) {
+                String sql = "INSERT INTO Customers (cus_name, cus_phone, cus_address) VALUES (?, ?, ?)";
+
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, txtName.getText().trim());
+                ps.setString(2, txtPhone.getText().trim());
+                ps.setString(3, txtAddress.getText().trim());
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    showSuccess(AddCustomerForm.this, "Thêm thành công!");
+                    isAdded = true;
+                    dispose();
                 }
-
-                try (Connection con = DBConnection.getConnection()) {
-                    String sql = "INSERT INTO Customers (cus_name, cus_phone, cus_address) VALUES (?, ?, ?)";
-
-                    PreparedStatement ps = con.prepareStatement(sql);
-                    ps.setString(1, txtName.getText().trim());
-                    ps.setString(2, txtPhone.getText().trim());
-                    ps.setString(3, txtAddress.getText().trim());
-
-                    int rows = ps.executeUpdate();
-                    if (rows > 0) {
-                        showSuccess(CustomerForm.AddCustomerForm.this, "Thêm thành công!");
-                        isAdded = true;
-                        dispose();
-                    }
-                } catch (Exception ex) {
-                    showError(CustomerForm.AddCustomerForm.this, "Lỗi: " + ex.getMessage());
-                }
+            } catch (Exception ex) {
+                showError(AddCustomerForm.this, "Lỗi: " + ex.getMessage());
             }
         });
 
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
 
     public boolean isAddedSuccess() {

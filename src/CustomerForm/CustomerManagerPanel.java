@@ -1,7 +1,7 @@
 package CustomerForm;
 
+import JDBCUntils.ComboItem;
 import JDBCUntils.DBConnection;
-//import CustomerForm.AddCustomerForm;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -13,99 +13,120 @@ import java.sql.*;
 import static JDBCUntils.Style.*;
 
 public class CustomerManagerPanel extends JPanel {
-    // --- KHAI BÁO BIẾN ---
-    private JList<String> listCustomer;
+    private JList<ComboItem> listCustomer;
     private JTextField txtSearch, txtName, txtPhone, txtAddress;
+
     private JButton btnAdd, btnSave, btnDelete;
 
-    private String originalName;
+    private JButton btnSort;
+    private int currentSortIndex = 0;
+    private final String[] sortModes = {"A-Z", "Z-A", "NEW", "OLD"};
+
+    private int selectedCusID = -1;
     private boolean isDataLoading = false;
 
     public CustomerManagerPanel() {
-        initUI();           // Vẽ giao diện
-        loadListData();     // Tải danh sách
-        addEvents();        // Gán sự kiện
-        addChangeListeners(); // Gán sự kiện hiện nút Lưu
+        initUI();
+        loadListData();
+        addEvents();
+        addChangeListeners();
     }
 
-    // --- PHẦN GIAO DIỆN (UI) ---
     private void initUI() {
         this.setLayout(new BorderLayout(10, 10));
         this.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 1. Panel Trái: Tìm kiếm + Danh sách
         JPanel leftPanel = new JPanel(new BorderLayout(5, 5));
         leftPanel.setPreferredSize(new Dimension(250, 0));
 
         txtSearch = new JTextField();
-        JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch,"Tìm kiếm");
-        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
-        searchPanel.add(txtSearch, BorderLayout.CENTER);
-        searchPanel.add(btnAdd, BorderLayout.EAST);
+        btnSort = new JButton("A-Z");
+        btnSort.setToolTipText("Đang xếp: Tên A-Z");
+
+        JPanel searchPanel = createSearchWithButtonPanel(txtSearch, btnSort, "Tìm kiếm");
+
+        leftPanel.add(searchPanel, BorderLayout.NORTH);
 
         listCustomer = new JList<>();
         listCustomer.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         listCustomer.setFixedCellHeight(30);
 
-        leftPanel.add(searchPanel, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(listCustomer), BorderLayout.CENTER);
 
-        // 2. Panel Phải: Form thông tin
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
         rightPanel.setBackground(Color.WHITE);
         rightPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        // Tiêu đề
         rightPanel.add(createHeaderLabel("THÔNG TIN KHÁCH HÀNG"));
         rightPanel.add(Box.createVerticalStrut(20));
 
         txtName = new JTextField();
-        JPanel pName = createTextFieldWithLabel(txtName, "Tên Khách Hàng:");
-        rightPanel.add(pName);
+        rightPanel.add(createTextFieldWithLabel(txtName, "Tên Khách Hàng:"));
         rightPanel.add(Box.createVerticalStrut(15));
 
         txtPhone = new JTextField();
-        JPanel pPhone = createTextFieldWithLabel(txtPhone, "Số điện thoại:");
-        rightPanel.add(pPhone);
+        rightPanel.add(createTextFieldWithLabel(txtPhone, "Số điện thoại:"));
         rightPanel.add(Box.createVerticalStrut(15));
 
         txtAddress = new JTextField();
-        JPanel pAddress = createTextFieldWithLabel(txtAddress, "Địa chỉ:");
-        rightPanel.add(pAddress);
+        rightPanel.add(createTextFieldWithLabel(txtAddress, "Địa chỉ:"));
         rightPanel.add(Box.createVerticalStrut(15));
 
-
-        // Panel Nút bấm (Lưu / Xóa)
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
-        btnSave = createButton("Lưu thay đổi", Color.GREEN);
-        btnDelete = createButton("Xóa khách hàng", Color.RED);
 
-        // Mặc định ẩn
+        btnAdd = createButton("Thêm Khách Hàng", Color.decode("#3498db"));
+
+        btnSave = createButton("Lưu thay đổi", new Color(46, 204, 113));
+        btnDelete = createButton("Xóa Khách Hàng", new Color(231, 76, 60)); // Đã sửa text lỗi
+
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
 
+        buttonPanel.add(btnAdd);
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
+
         rightPanel.add(buttonPanel);
 
-        // Ghép vào Panel chính
         this.add(leftPanel, BorderLayout.WEST);
         this.add(rightPanel, BorderLayout.CENTER);
 
         enableForm(false);
     }
 
-    // --- PHẦN LOGIC DỮ LIỆU ---
     private void loadListData() {
-        DefaultListModel<String> model = new DefaultListModel<>();
+        DefaultListModel<ComboItem> model = new DefaultListModel<>();
+
+        String keyword = txtSearch.getText().trim();
+        boolean isSearching = !keyword.isEmpty() && !keyword.equals("Tìm kiếm...");
+
         try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT cus_name FROM Customers";
-            PreparedStatement ps = con.prepareStatement(sql);
+            StringBuilder sql = new StringBuilder("SELECT cus_id, cus_name FROM Customers");
+
+            if (isSearching) {
+                sql.append(" WHERE cus_name LIKE ?");
+            }
+
+            switch (currentSortIndex) {
+                case 1: sql.append(" ORDER BY cus_name DESC"); break;
+                case 2: sql.append(" ORDER BY cus_id DESC"); break;
+                case 3: sql.append(" ORDER BY cus_id ASC"); break;
+                default: sql.append(" ORDER BY cus_name ASC");
+            }
+
+            PreparedStatement ps = con.prepareStatement(sql.toString());
+
+            if (isSearching) {
+                ps.setString(1, "%" + keyword + "%");
+            }
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                model.addElement(rs.getString("cus_name"));
+                int id = rs.getInt("cus_id");
+                String name = rs.getString("cus_name");
+                model.addElement(new ComboItem(name, id));
             }
             listCustomer.setModel(model);
         } catch (Exception e) {
@@ -113,12 +134,12 @@ public class CustomerManagerPanel extends JPanel {
         }
     }
 
-    private void loadDetail(String name) {
+    private void loadDetail(int id) {
         isDataLoading = true;
         try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT * FROM Customers WHERE cus_name = ?";
+            String sql = "SELECT * FROM Customers WHERE cus_id = ?";
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, name);
+            ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
@@ -128,46 +149,52 @@ public class CustomerManagerPanel extends JPanel {
 
                 enableForm(true);
                 btnDelete.setVisible(true);
+                btnSave.setVisible(false);
+                btnAdd.setVisible(true);
             }
         } catch (Exception e) {
             showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
-            btnSave.setVisible(false);
             isDataLoading = false;
         }
     }
 
-    // --- PHẦN SỰ KIỆN ---
     private void addEvents() {
         listCustomer.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                String selected = listCustomer.getSelectedValue();
+                ComboItem selected = listCustomer.getSelectedValue();
                 if (selected != null) {
-                    originalName = selected;
-                    loadDetail(selected);
+                    selectedCusID = selected.getValue();
+                    loadDetail(selectedCusID);
                 }
             }
         });
 
-        // 2. Tìm kiếm
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { doSearch(); }
-            public void removeUpdate(DocumentEvent e) { doSearch(); }
-            public void changedUpdate(DocumentEvent e) { doSearch(); }
-
-            private void doSearch() {
-                String key = txtSearch.getText().trim();
-                if (key.isEmpty() || key.equals("Tìm kiếm...")) {
-                    loadListData();
-                } else {
-                    search(key);
-                }
-            }
+            public void insertUpdate(DocumentEvent e) { loadListData(); }
+            public void removeUpdate(DocumentEvent e) { loadListData(); }
+            public void changedUpdate(DocumentEvent e) { loadListData(); }
         });
 
-        // 3. Nút Thêm
-        btnAdd.addActionListener(e -> {
+        btnSort.addActionListener(_ -> {
+            currentSortIndex++;
+            if (currentSortIndex >= sortModes.length) {
+                currentSortIndex = 0;
+            }
+            btnSort.setText(sortModes[currentSortIndex]);
+
+            switch (currentSortIndex) {
+                case 0: btnSort.setToolTipText("Đang xếp: Tên A -> Z"); break;
+                case 1: btnSort.setToolTipText("Đang xếp: Tên Z -> A"); break;
+                case 2: btnSort.setToolTipText("Đang xếp: Khách mới thêm"); break;
+                case 3: btnSort.setToolTipText("Đang xếp: Khách cũ"); break;
+            }
+
+            loadListData();
+        });
+
+        btnAdd.addActionListener(_ -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             AddCustomerForm addCustomerForm = new AddCustomerForm(parentFrame);
             addCustomerForm.setVisible(true);
@@ -177,19 +204,17 @@ public class CustomerManagerPanel extends JPanel {
             }
         });
 
-        // 4. Nút Lưu
-        btnSave.addActionListener(e -> {
+        btnSave.addActionListener(_ -> {
             try (Connection con = DBConnection.getConnection()) {
-                String sql = "UPDATE Customers SET cus_name=?, cus_phone=?, cus_address=? WHERE cus_name=?";
+                String sql = "UPDATE Customers SET cus_name=?, cus_phone=?, cus_address=? WHERE cus_id=?";
                 PreparedStatement ps = con.prepareStatement(sql);
                 ps.setString(1, txtName.getText());
                 ps.setString(2, txtPhone.getText());
                 ps.setString(3, txtAddress.getText());
-                ps.setString(4, originalName);
+                ps.setInt(4, selectedCusID);
 
                 if (ps.executeUpdate() > 0) {
                     showSuccess(this, "Cập nhật thành công!");
-                    originalName = txtName.getText();
                     loadListData();
                     btnSave.setVisible(false);
                 }
@@ -198,41 +223,32 @@ public class CustomerManagerPanel extends JPanel {
             }
         });
 
-        // 5. Nút Xóa
-        btnDelete.addActionListener(e -> {
-            if(showConfirm(this, "Xóa " + originalName + "?")){
+        btnDelete.addActionListener(_ -> {
+            if(showConfirm(this, "Xóa khách hàng này?")){
                 try (Connection con = DBConnection.getConnection()) {
-                    PreparedStatement ps = con.prepareStatement("DELETE FROM Customers WHERE cus_name=?");
-                    ps.setString(1, originalName);
+                    PreparedStatement ps = con.prepareStatement("DELETE FROM Customers WHERE cus_id=?");
+                    ps.setInt(1, selectedCusID); // Dùng ID đã lưu
                     if (ps.executeUpdate() > 0) {
                         loadListData();
                         clearForm();
                     }
                 } catch (Exception ex) {
-                    showError(this, "Lỗi: " + ex.getMessage());
+                    if (ex.getMessage().contains("foreign key")) {
+                        showError(this, "Không thể xóa khách hàng này vì đã có hóa đơn!");
+                    } else {
+                        if (ex.getMessage().contains("foreign key")) {
+                            showError(this, "Không thể xóa khách hàng này vì họ đã có lịch sử mua hàng (Hóa đơn)!");
+                        } else {
+                            showError(this, "Lỗi: " + ex.getMessage());
+                        }
+                    }
                 }
             }
         });
     }
 
-    private void search(String keyword) {
-        DefaultListModel<String> model = new DefaultListModel<>();
-        try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT cus_name FROM Customers WHERE cus_name LIKE ?";
-            PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, "%" + keyword + "%");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                model.addElement(rs.getString("cus_name"));
-            }
-            listCustomer.setModel(model);
-        } catch (Exception e) {
-            showError(this, "Lỗi: " + e.getMessage());
-        }
-    }
-
     private void addChangeListeners() {
-        CustomerForm.CustomerManagerPanel.SimpleDocumentListener docListener = new CustomerForm.CustomerManagerPanel.SimpleDocumentListener(e -> {
+        SimpleDocumentListener docListener = new SimpleDocumentListener(_ -> {
             if (!isDataLoading) btnSave.setVisible(true);
         });
 
@@ -244,7 +260,9 @@ public class CustomerManagerPanel extends JPanel {
     private void clearForm() {
         isDataLoading = true;
         txtName.setText(""); txtPhone.setText(""); txtAddress.setText("");
-        btnSave.setVisible(false); btnDelete.setVisible(false);
+
+        btnSave.setVisible(false);
+        btnDelete.setVisible(false);
         enableForm(false);
         isDataLoading = false;
     }
@@ -257,7 +275,6 @@ public class CustomerManagerPanel extends JPanel {
 
     public void refreshData() {
         loadListData();
-        clearForm();
     }
 
     @FunctionalInterface

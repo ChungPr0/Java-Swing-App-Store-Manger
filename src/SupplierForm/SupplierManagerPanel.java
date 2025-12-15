@@ -1,5 +1,6 @@
 package SupplierForm;
 
+import JDBCUntils.ComboItem;
 import JDBCUntils.DBConnection;
 
 import javax.swing.*;
@@ -12,11 +13,16 @@ import java.sql.*;
 import static JDBCUntils.Style.*;
 
 public class SupplierManagerPanel extends JPanel {
-    private JList<String> listSupplier;
+    private JList<ComboItem> listSupplier;
     private JTextField txtSearch, txtName, txtPhone, txtAddress;
+
     private JButton btnAdd, btnSave, btnDelete;
 
-    private String originalName;
+    private JButton btnSort;
+    private int currentSortIndex = 0;
+    private final String[] sortModes = {"A-Z", "Z-A", "NEW", "OLD"};
+
+    private int selectedSupID = -1;
     private boolean isDataLoading = false;
 
     public SupplierManagerPanel() {
@@ -36,16 +42,17 @@ public class SupplierManagerPanel extends JPanel {
         leftPanel.setOpaque(false);
 
         txtSearch = new JTextField();
-        JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch,"Tìm kiếm");
-        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
-        searchPanel.add(txtSearch, BorderLayout.CENTER);
-        searchPanel.add(btnAdd, BorderLayout.EAST);
+        btnSort = new JButton("A-Z");
+        btnSort.setToolTipText("Đang xếp: Tên A-Z");
+
+        JPanel searchPanel = createSearchWithButtonPanel(txtSearch, btnSort, "Tìm kiếm");
+
+        leftPanel.add(searchPanel, BorderLayout.NORTH);
 
         listSupplier = new JList<>();
         listSupplier.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         listSupplier.setFixedCellHeight(30);
 
-        leftPanel.add(searchPanel, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(listSupplier), BorderLayout.CENTER);
 
         JPanel rightPanel = new JPanel();
@@ -57,30 +64,32 @@ public class SupplierManagerPanel extends JPanel {
         rightPanel.add(Box.createVerticalStrut(20));
 
         txtName = new JTextField();
-        JPanel pName = createTextFieldWithLabel(txtName, "Tên Nhà Cung Cấp:");
-        rightPanel.add(pName);
+        rightPanel.add(createTextFieldWithLabel(txtName, "Tên Nhà Cung Cấp:"));
         rightPanel.add(Box.createVerticalStrut(15));
 
         txtPhone = new JTextField();
-        JPanel pPhone = createTextFieldWithLabel(txtPhone, "Số điện thoại:");
-        rightPanel.add(pPhone);
+        rightPanel.add(createTextFieldWithLabel(txtPhone, "Số điện thoại:"));
         rightPanel.add(Box.createVerticalStrut(15));
 
         txtAddress = new JTextField();
-        JPanel pAddress = createTextFieldWithLabel(txtAddress, "Địa chỉ:");
-        rightPanel.add(pAddress);
+        rightPanel.add(createTextFieldWithLabel(txtAddress, "Địa chỉ:"));
         rightPanel.add(Box.createVerticalStrut(15));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
+
+        btnAdd = createButton("Thêm nhà cung cấp", Color.decode("#3498db"));
+
         btnSave = createButton("Lưu thay đổi", new Color(46, 204, 113));
-        btnDelete = createButton("Xóa Nhà Cung Cấp", new Color(231, 76, 60));
+        btnDelete = createButton("Xóa nhà cung cấp", new Color(231, 76, 60));
 
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
 
+        buttonPanel.add(btnAdd);
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
+
         rightPanel.add(buttonPanel);
 
         this.add(leftPanel, BorderLayout.WEST);
@@ -90,13 +99,36 @@ public class SupplierManagerPanel extends JPanel {
     }
 
     private void loadListData() {
-        DefaultListModel<String> model = new DefaultListModel<>();
+        DefaultListModel<ComboItem> model = new DefaultListModel<>();
+
+        String keyword = txtSearch.getText().trim();
+        boolean isSearching = !keyword.isEmpty() && !keyword.equals("Tìm kiếm...");
+
         try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT sup_name FROM Suppliers";
-            PreparedStatement ps = con.prepareStatement(sql);
+            StringBuilder sql = new StringBuilder("SELECT sup_id, sup_name FROM Suppliers");
+
+            if (isSearching) {
+                sql.append(" WHERE sup_name LIKE ?");
+            }
+
+            switch (currentSortIndex) {
+                case 1: sql.append(" ORDER BY sup_name DESC"); break;
+                case 2: sql.append(" ORDER BY sup_id DESC"); break;
+                case 3: sql.append(" ORDER BY sup_id ASC"); break;
+                default: sql.append(" ORDER BY sup_name ASC");
+            }
+
+            PreparedStatement ps = con.prepareStatement(sql.toString());
+
+            if (isSearching) {
+                ps.setString(1, "%" + keyword + "%");
+            }
+
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                model.addElement(rs.getString("sup_name"));
+                int id = rs.getInt("sup_id");
+                String name = rs.getString("sup_name");
+                model.addElement(new ComboItem(name, id));
             }
             listSupplier.setModel(model);
         } catch (Exception e) {
@@ -104,12 +136,12 @@ public class SupplierManagerPanel extends JPanel {
         }
     }
 
-    private void loadDetail(String name) {
+    private void loadDetail(int id) {
         isDataLoading = true;
         try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT * FROM Suppliers WHERE sup_name = ?";
+            String sql = "SELECT * FROM Suppliers WHERE sup_id = ?";
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, name);
+            ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
@@ -119,12 +151,13 @@ public class SupplierManagerPanel extends JPanel {
 
                 enableForm(true);
                 btnDelete.setVisible(true);
+                btnSave.setVisible(false);
+                btnAdd.setVisible(true);
             }
         } catch (Exception e) {
             showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
-            btnSave.setVisible(false);
             isDataLoading = false;
         }
     }
@@ -132,30 +165,38 @@ public class SupplierManagerPanel extends JPanel {
     private void addEvents() {
         listSupplier.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                String selected = listSupplier.getSelectedValue();
+                ComboItem selected = listSupplier.getSelectedValue();
                 if (selected != null) {
-                    originalName = selected;
-                    loadDetail(selected);
+                    selectedSupID = selected.getValue();
+                    loadDetail(selectedSupID);
                 }
             }
         });
 
         txtSearch.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { doSearch(); }
-            public void removeUpdate(DocumentEvent e) { doSearch(); }
-            public void changedUpdate(DocumentEvent e) { doSearch(); }
-
-            private void doSearch() {
-                String key = txtSearch.getText().trim();
-                if (key.isEmpty() || key.equals("Tìm kiếm...")) {
-                    loadListData();
-                } else {
-                    search(key);
-                }
-            }
+            public void insertUpdate(DocumentEvent e) { loadListData(); }
+            public void removeUpdate(DocumentEvent e) { loadListData(); }
+            public void changedUpdate(DocumentEvent e) { loadListData(); }
         });
 
-        btnAdd.addActionListener(e -> {
+        btnSort.addActionListener(_ -> {
+            currentSortIndex++;
+            if (currentSortIndex >= sortModes.length) {
+                currentSortIndex = 0;
+            }
+            btnSort.setText(sortModes[currentSortIndex]);
+
+            switch (currentSortIndex) {
+                case 0: btnSort.setToolTipText("Đang xếp: Tên A -> Z"); break;
+                case 1: btnSort.setToolTipText("Đang xếp: Tên Z -> A"); break;
+                case 2: btnSort.setToolTipText("Đang xếp: Nhà cung cấp mới hợp tác"); break;
+                case 3: btnSort.setToolTipText("Đang xếp: Nhà cung cấp lâu năm"); break;
+            }
+
+            loadListData();
+        });
+
+        btnAdd.addActionListener(_ -> {
             JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             AddSupplierForm addSupplierForm = new AddSupplierForm(parentFrame);
             addSupplierForm.setVisible(true);
@@ -165,18 +206,18 @@ public class SupplierManagerPanel extends JPanel {
             }
         });
 
-        btnSave.addActionListener(e -> {
+        btnSave.addActionListener(_ -> {
             try (Connection con = DBConnection.getConnection()) {
-                String sql = "UPDATE Suppliers SET sup_name=?, sup_phone=?, sup_address=? WHERE sup_name=?";
+                String sql = "UPDATE Suppliers SET sup_name=?, sup_phone=?, sup_address=? WHERE sup_id=?";
                 PreparedStatement ps = con.prepareStatement(sql);
                 ps.setString(1, txtName.getText());
                 ps.setString(2, txtPhone.getText());
                 ps.setString(3, txtAddress.getText());
-                ps.setString(4, originalName);
+
+                ps.setInt(4, selectedSupID);
 
                 if (ps.executeUpdate() > 0) {
                     showSuccess(this, "Cập nhật thành công!");
-                    originalName = txtName.getText();
                     loadListData();
                     btnSave.setVisible(false);
                 }
@@ -185,40 +226,28 @@ public class SupplierManagerPanel extends JPanel {
             }
         });
 
-        btnDelete.addActionListener(e -> {
-            if(showConfirm(this, "Xóa " + originalName + "?")){
+        btnDelete.addActionListener(_ -> {
+            if(showConfirm(this, "Xóa nhà cung cấp này?")){
                 try (Connection con = DBConnection.getConnection()) {
-                    PreparedStatement ps = con.prepareStatement("DELETE FROM Suppliers WHERE sup_name=?");
-                    ps.setString(1, originalName);
+                    PreparedStatement ps = con.prepareStatement("DELETE FROM Suppliers WHERE sup_id=?");
+                    ps.setInt(1, selectedSupID);
                     if (ps.executeUpdate() > 0) {
                         loadListData();
                         clearForm();
                     }
                 } catch (Exception ex) {
-                    showError(this, "Lỗi: " + ex.getMessage());
+                    if (ex.getMessage().contains("foreign key")) {
+                        showError(this, "Không thể xóa nhà cung cấp này vì họ đang cung cấp các sản phẩm trong kho!");
+                    } else {
+                        showError(this, "Lỗi: " + ex.getMessage());
+                    }
                 }
             }
         });
     }
 
-    private void search(String keyword) {
-        DefaultListModel<String> model = new DefaultListModel<>();
-        try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT sup_name FROM Suppliers WHERE sup_name LIKE ?";
-            PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, "%" + keyword + "%");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                model.addElement(rs.getString("sup_name"));
-            }
-            listSupplier.setModel(model);
-        } catch (Exception e) {
-            showError(this, "Lỗi: " + e.getMessage());;
-        }
-    }
-
     private void addChangeListeners() {
-        SimpleDocumentListener docListener = new SimpleDocumentListener(e -> {
+        SimpleDocumentListener docListener = new SimpleDocumentListener(_ -> {
             if (!isDataLoading) btnSave.setVisible(true);
         });
 
@@ -230,7 +259,9 @@ public class SupplierManagerPanel extends JPanel {
     private void clearForm() {
         isDataLoading = true;
         txtName.setText(""); txtPhone.setText(""); txtAddress.setText("");
-        btnSave.setVisible(false); btnDelete.setVisible(false);
+
+        btnSave.setVisible(false);
+        btnDelete.setVisible(false);
         enableForm(false);
         isDataLoading = false;
     }
@@ -243,7 +274,6 @@ public class SupplierManagerPanel extends JPanel {
 
     public void refreshData() {
         loadListData();
-        clearForm();
     }
 
     @FunctionalInterface

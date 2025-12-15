@@ -10,12 +10,7 @@ import java.sql.Connection;
 public class MainRun {
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+        SwingUtilities.invokeLater(MainRun::createAndShowGUI);
     }
 
     private static void createAndShowGUI() {

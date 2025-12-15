@@ -4,6 +4,7 @@ import CustomerForm.CustomerManagerPanel;
 import HomeForm.HomeManagerPanel;
 import InvoiceForm.InvoiceManagerPanel;
 import JDBCUntils.Session;
+import Login.ChangePasswordDialog;
 import Login.LoginForm;
 import ProductForm.ProductManagerPanel;
 import StaffForm.StaffManagerPanel;
@@ -19,10 +20,8 @@ import java.util.Objects;
 import static JDBCUntils.Style.*;
 
 public class DashBoard extends JFrame {
-    private JPanel mainContainer;
-    private JPanel menuPanel, leftMenuPanel, rightMenuPanel;
     private JPanel contentPanel;
-    private JLabel btnHome, btnStaff, btnSupplier, btnCustomer, btnProduct, btnInvoice, btnInfo;
+    private JLabel btnHome, btnStaff, btnSupplier, btnCustomer, btnProduct, btnInvoice;
     private CardLayout cardLayout;
 
     private HomeManagerPanel homePanel;
@@ -43,12 +42,12 @@ public class DashBoard extends JFrame {
     }
 
     private void initUI() {
-        mainContainer = new JPanel(new BorderLayout());
+        JPanel mainContainer = new JPanel(new BorderLayout());
 
-        menuPanel = new JPanel(new BorderLayout());
+        JPanel menuPanel = new JPanel(new BorderLayout());
         menuPanel.setBackground(Color.decode("#2c3e50"));
 
-        leftMenuPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel leftMenuPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         leftMenuPanel.setBackground(Color.decode("#2c3e50"));
 
         btnHome = createMenuLabel("TRANG CHỦ");
@@ -57,7 +56,8 @@ public class DashBoard extends JFrame {
         btnCustomer = createMenuLabel("KHÁCH HÀNG");
         btnProduct = createMenuLabel("SẢN PHẨM");
         btnInvoice = createMenuLabel("HÓA ĐƠN");
-        btnInfo = createMenuLabel("TÀI KHOẢN");
+
+        JLabel btnInfo = createMenuLabel("TÀI KHOẢN");
         setupUserPopup(btnInfo);
 
         leftMenuPanel.add(btnHome);
@@ -67,7 +67,7 @@ public class DashBoard extends JFrame {
         leftMenuPanel.add(btnProduct);
         leftMenuPanel.add(btnInvoice);
 
-        rightMenuPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel rightMenuPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightMenuPanel.setBackground(Color.decode("#2c3e50"));
         rightMenuPanel.add(btnInfo);
 
@@ -98,6 +98,7 @@ public class DashBoard extends JFrame {
 
         if (!JDBCUntils.Session.isAdmin()) {
             btnStaff.setVisible(false);
+            btnSupplier.setVisible(false);
         }
     }
 
@@ -156,7 +157,7 @@ public class DashBoard extends JFrame {
         JPopupMenu popupProfile = new JPopupMenu();
         popupProfile.setBackground(Color.WHITE);
         popupProfile.setBorder(BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1));
-        popupProfile.setPreferredSize(new Dimension(250, 180));
+        popupProfile.setPreferredSize(new Dimension(250, 240));
 
         JPanel pContent = new JPanel();
         pContent.setLayout(new BoxLayout(pContent, BoxLayout.Y_AXIS));
@@ -173,7 +174,7 @@ public class DashBoard extends JFrame {
         lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         String role = "Nhân viên";
-        if (Objects.equals(Session.userRole, "Admin")) {
+        if (Objects.equals(JDBCUntils.Session.userRole, "Admin")) {
             role = "Quản lý";
         }
 
@@ -182,16 +183,27 @@ public class DashBoard extends JFrame {
         lblRole.setForeground(Color.GRAY);
         lblRole.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JButton btnLogout = createButton("Đăng Xuất",Color.decode("#e74c3c"));
+        JButton btnChangePass = createButton("Đổi mật khẩu", Color.decode("#3498db"));
+        btnChangePass.setAlignmentX(Component.LEFT_ALIGNMENT);
+        btnChangePass.setMaximumSize(new Dimension(220, 35));
+
+        btnChangePass.addActionListener(_ -> {
+            popupProfile.setVisible(false);
+            JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
+            new ChangePasswordDialog(parent).setVisible(true);
+        });
+
+        JButton btnLogout = createButton("Đăng Xuất", Color.decode("#e74c3c"));
         btnLogout.setAlignmentX(Component.LEFT_ALIGNMENT);
         btnLogout.setMaximumSize(new Dimension(220, 35));
 
-        btnLogout.addActionListener(e -> {
+        btnLogout.addActionListener(_ -> {
             popupProfile.setVisible(false);
-            JDBCUntils.Session.clear();
-            this.dispose();
-            new LoginForm().setVisible(true);
-
+            if (showConfirm(this, "Bạn có chắc muốn đăng xuất?")) {
+                Session.clear();
+                this.dispose();
+                new LoginForm().setVisible(true);
+            }
         });
 
         pContent.add(lblTitle);
@@ -201,14 +213,32 @@ public class DashBoard extends JFrame {
         pContent.add(lblUser);
         pContent.add(Box.createVerticalStrut(5));
         pContent.add(lblRole);
-        pContent.add(Box.createVerticalStrut(20));
+        pContent.add(Box.createVerticalStrut(15));
+        pContent.add(btnChangePass);
+        pContent.add(Box.createVerticalStrut(10));
         pContent.add(btnLogout);
 
         popupProfile.add(pContent);
 
+        final long[] lastCloseTime = {0};
+
+        popupProfile.addPopupMenuListener(new javax.swing.event.PopupMenuListener() {
+            @Override public void popupMenuWillBecomeVisible(javax.swing.event.PopupMenuEvent e) {}
+            @Override public void popupMenuCanceled(javax.swing.event.PopupMenuEvent e) {}
+
+            @Override
+            public void popupMenuWillBecomeInvisible(javax.swing.event.PopupMenuEvent e) {
+                lastCloseTime[0] = System.currentTimeMillis();
+            }
+        });
+
+        targetComponent.setCursor(new Cursor(Cursor.HAND_CURSOR));
         targetComponent.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
+                if (System.currentTimeMillis() - lastCloseTime[0] < 200) {
+                    return;
+                }
                 int x = targetComponent.getWidth() - popupProfile.getPreferredSize().width;
                 int y = targetComponent.getHeight();
                 popupProfile.show(targetComponent, x, y);

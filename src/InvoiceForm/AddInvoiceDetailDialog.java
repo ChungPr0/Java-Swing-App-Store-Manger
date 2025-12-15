@@ -82,7 +82,7 @@ public class AddInvoiceDetailDialog extends JDialog {
     }
 
     private void addEvents() {
-        btnAdd.addActionListener(e -> {
+        btnAdd.addActionListener(_ -> {
             try {
                 String qtyText = txtQuantity.getText().trim();
                 if (qtyText.isEmpty()) {
@@ -120,7 +120,7 @@ public class AddInvoiceDetailDialog extends JDialog {
             }
         });
 
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
 
     public boolean isConfirmed() { return isConfirmed; }

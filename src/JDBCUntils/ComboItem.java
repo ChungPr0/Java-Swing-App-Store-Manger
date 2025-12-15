@@ -1,8 +1,8 @@
 package JDBCUntils;
 
 public class ComboItem {
-    private String key;
-    private int value;
+    private final String key;
+    private final int value;
 
     public ComboItem(String key, int value) {
         this.key = key;

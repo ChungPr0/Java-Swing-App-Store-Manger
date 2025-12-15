@@ -11,18 +11,25 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.sql.*;
 import java.text.DecimalFormat;
+import java.util.Objects;
 
 import static JDBCUntils.Style.*;
 
 public class InvoiceManagerPanel extends JPanel {
-    private JList<String> listInvoice;
+    private JList<ComboItem> listInvoice;
     private JTextField txtSearch, txtTotalMoney, txtID, txtDate;
     private JComboBox<ComboItem> cbCustomer, cbStaff;
+
     private JButton btnAdd, btnSave, btnDelete, btnQuickAddCustomer;
 
     private JTable tableDetails;
     private DefaultTableModel detailModel;
     private JButton btnAddDetail, btnEditDetail, btnDelDetail;
+
+    private JButton btnPrint;
+    private JButton btnSort;
+    private int currentSortIndex = 0;
+    private final String[] sortModes = {"NEW", "OLD", "PUP", "PDW"};
 
     private int selectedInvID = -1;
     private boolean isDataLoading = false;
@@ -45,16 +52,17 @@ public class InvoiceManagerPanel extends JPanel {
         leftPanel.setOpaque(false);
 
         txtSearch = new JTextField();
-        JPanel searchPanel = createTextFieldWithPlaceholder(txtSearch, "Tìm kiếm");
-        btnAdd = createSmallButton("Thêm", Color.LIGHT_GRAY);
-        searchPanel.add(txtSearch, BorderLayout.CENTER);
-        searchPanel.add(btnAdd, BorderLayout.EAST);
+        btnSort = new JButton("NEW");
+        btnSort.setToolTipText("Đang xếp: Mới nhất");
+
+        JPanel searchPanel = createSearchWithButtonPanel(txtSearch, btnSort, "Tìm kiếm");
+
+        leftPanel.add(searchPanel, BorderLayout.NORTH);
 
         listInvoice = new JList<>();
         listInvoice.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         listInvoice.setFixedCellHeight(30);
 
-        leftPanel.add(searchPanel, BorderLayout.NORTH);
         leftPanel.add(new JScrollPane(listInvoice), BorderLayout.CENTER);
 
         JPanel rightPanel = new JPanel();
@@ -143,13 +151,21 @@ public class InvoiceManagerPanel extends JPanel {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.setBackground(Color.WHITE);
+
+        btnAdd = createButton("Tạo mới", Color.decode("#3498db"));
         btnSave = createButton("Lưu thay đổi", new Color(46, 204, 113));
         btnDelete = createButton("Xóa Hóa Đơn", new Color(231, 76, 60));
+        btnPrint = createButton("In Hóa Đơn", Color.decode("#9b59b6"));
+
+        btnPrint.setVisible(false);
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
 
+        buttonPanel.add(btnAdd);
+        buttonPanel.add(btnPrint);
         buttonPanel.add(btnSave);
         buttonPanel.add(btnDelete);
+
         rightPanel.add(buttonPanel);
 
         JScrollPane rightScrollPane = new JScrollPane(rightPanel);
@@ -171,17 +187,62 @@ public class InvoiceManagerPanel extends JPanel {
 
             ResultSet rsSta = con.createStatement().executeQuery("SELECT sta_ID, sta_name FROM Staffs");
             while (rsSta.next()) cbStaff.addItem(new ComboItem(rsSta.getString("sta_name"), rsSta.getInt("sta_ID")));
+
+            if (JDBCUntils.Session.isLoggedIn) {
+                int myID = JDBCUntils.Session.loggedInStaffID;
+
+                for (int i = 0; i < cbStaff.getItemCount(); i++) {
+                    ComboItem item = cbStaff.getItemAt(i);
+                    if (item.getValue() == myID) {
+                        cbStaff.setSelectedIndex(i);
+                        break;
+                    }
+                }
+            }
+
         } catch (Exception e) {
             showError(this, "Lỗi: " + e.getMessage());
         }
     }
 
     private void loadListData() {
-        DefaultListModel<String> model = new DefaultListModel<>();
+        DefaultListModel<ComboItem> model = new DefaultListModel<>();
+
+        String keyword = txtSearch.getText().trim();
+        boolean isSearching = !keyword.isEmpty() && !keyword.equals("Tìm kiếm...");
+
         try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT i.inv_ID, c.cus_name FROM Invoices i LEFT JOIN Customers c ON i.cus_ID = c.cus_ID ORDER BY i.inv_ID DESC";
-            ResultSet rs = con.createStatement().executeQuery(sql);
-            while (rs.next()) model.addElement("HĐ #" + rs.getInt("inv_ID") + " - " + rs.getString("cus_name"));
+            StringBuilder sql = new StringBuilder("SELECT i.inv_ID, i.inv_price, c.cus_name " +
+                    "FROM Invoices i LEFT JOIN Customers c ON i.cus_ID = c.cus_ID");
+
+            if (isSearching) {
+                sql.append(" WHERE i.inv_ID LIKE ? OR c.cus_name LIKE ?");
+            }
+
+            switch (currentSortIndex) {
+                case 1: sql.append(" ORDER BY i.inv_ID ASC"); break;
+                case 2: sql.append(" ORDER BY i.inv_price ASC"); break;
+                case 3: sql.append(" ORDER BY i.inv_price DESC"); break;
+                default: sql.append(" ORDER BY i.inv_ID DESC");
+            }
+
+            PreparedStatement ps = con.prepareStatement(sql.toString());
+
+            if (isSearching) {
+                String searchPattern = "%" + keyword + "%";
+                ps.setString(1, searchPattern);
+                ps.setString(2, searchPattern);
+            }
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                int id = rs.getInt("inv_ID");
+                String cusName = rs.getString("cus_name");
+                if (cusName == null) cusName = "Khách vãng lai";
+
+                String displayText = "HĐ #" + id + " - " + cusName;
+                model.addElement(new ComboItem(displayText, id));
+            }
             listInvoice.setModel(model);
         } catch (Exception e) {
             showError(this, "Lỗi: " + e.getMessage());
@@ -204,7 +265,11 @@ public class InvoiceManagerPanel extends JPanel {
                 setSelectedComboItem(cbStaff, rs.getInt("sta_ID"));
                 java.sql.Timestamp ts = rs.getTimestamp("inv_date");
                 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                txtDate.setText(sdf.format(ts));
+                txtDate.setText(ts != null ? sdf.format(ts) : "");
+
+                btnAdd.setVisible(true);
+                btnSave.setVisible(false);
+                btnPrint.setVisible(true);
 
                 if (JDBCUntils.Session.isAdmin()) {
                     enableForm(true);
@@ -213,7 +278,6 @@ public class InvoiceManagerPanel extends JPanel {
                     setDetailButtonsVisible(true);
                 } else {
                     enableForm(false);
-                    btnSave.setVisible(false);
                     btnDelete.setVisible(false);
                     setDetailButtonsVisible(false);
                 }
@@ -242,9 +306,6 @@ public class InvoiceManagerPanel extends JPanel {
         } catch (Exception e) {
             showError(this, "Lỗi: " + e.getMessage());
         } finally {
-            if (JDBCUntils.Session.isAdmin()) {
-                btnSave.setVisible(false);
-            }
             isDataLoading = false;
         }
     }
@@ -252,16 +313,39 @@ public class InvoiceManagerPanel extends JPanel {
     private void addEvents() {
         listInvoice.addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                String selected = listInvoice.getSelectedValue();
+                ComboItem selected = listInvoice.getSelectedValue();
                 if (selected != null) {
-                    String idStr = selected.split(" ")[1].replace("#", "");
-                    loadDetail(Integer.parseInt(idStr));
+                    selectedInvID = selected.getValue();
+                    loadDetail(selectedInvID);
                     btnSave.setText("Lưu thay đổi");
                 }
             }
         });
 
-        btnAdd.addActionListener(e -> {
+        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { loadListData(); }
+            public void removeUpdate(DocumentEvent e) { loadListData(); }
+            public void changedUpdate(DocumentEvent e) { loadListData(); }
+        });
+
+        btnSort.addActionListener(_ -> {
+            currentSortIndex++;
+            if (currentSortIndex >= sortModes.length) {
+                currentSortIndex = 0;
+            }
+            btnSort.setText(sortModes[currentSortIndex]);
+
+            switch (currentSortIndex) {
+                case 0: btnSort.setToolTipText("Đang xếp: Mới nhất trước"); break;
+                case 1: btnSort.setToolTipText("Đang xếp: Cũ nhất trước"); break;
+                case 2: btnSort.setToolTipText("Đang xếp: Giá thấp đến cao"); break;
+                case 3: btnSort.setToolTipText("Đang xếp: Giá cao đến thấp"); break;
+            }
+
+            loadListData();
+        });
+
+        btnAdd.addActionListener(_ -> {
             clearForm();
             enableForm(true);
             setDetailButtonsVisible(true);
@@ -271,12 +355,15 @@ public class InvoiceManagerPanel extends JPanel {
             }
 
             selectedInvID = -1;
-            btnSave.setText("Tạo hóa đơn");
+
+            btnSave.setText("Lưu hóa đơn");
             btnSave.setVisible(true);
+            btnAdd.setVisible(false);
             btnDelete.setVisible(false);
+            btnPrint.setVisible(false);
         });
 
-        btnDelDetail.addActionListener(e -> {
+        btnDelDetail.addActionListener(_ -> {
             int row = tableDetails.getSelectedRow();
             if (row != -1) {
                 detailModel.removeRow(row);
@@ -285,7 +372,7 @@ public class InvoiceManagerPanel extends JPanel {
             }
         });
 
-        btnEditDetail.addActionListener(e -> {
+        btnEditDetail.addActionListener(_ -> {
             int row = tableDetails.getSelectedRow();
             if (row == -1) return;
 
@@ -312,7 +399,7 @@ public class InvoiceManagerPanel extends JPanel {
                 maxLimit = stockInDB + qtySavedInDB;
 
             } catch(Exception ex) {
-                ex.printStackTrace();
+                showError(this, "Lỗi: " + ex.getMessage());
             }
 
             JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
@@ -332,8 +419,7 @@ public class InvoiceManagerPanel extends JPanel {
             }
         });
 
-        btnAddDetail.addActionListener(e -> {
-
+        btnAddDetail.addActionListener(_ -> {
             JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
             AddInvoiceDetailDialog dialog = new AddInvoiceDetailDialog(parent);
             dialog.setVisible(true);
@@ -384,7 +470,7 @@ public class InvoiceManagerPanel extends JPanel {
             }
         });
 
-        btnSave.addActionListener(e -> {
+        btnSave.addActionListener(_ -> {
             if (detailModel.getRowCount() == 0) {
                 showError(this, "Chưa có sản phẩm nào!");
                 return;
@@ -393,7 +479,7 @@ public class InvoiceManagerPanel extends JPanel {
             else saveChangesToDatabase();
         });
 
-        btnQuickAddCustomer.addActionListener(e -> {
+        btnQuickAddCustomer.addActionListener(_ -> {
             JFrame parent = (JFrame) SwingUtilities.getWindowAncestor(this);
 
             CustomerForm.AddCustomerForm addForm = new CustomerForm.AddCustomerForm(parent);
@@ -409,28 +495,16 @@ public class InvoiceManagerPanel extends JPanel {
             }
         });
 
-        txtSearch.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { doSearch(); }
-            public void removeUpdate(DocumentEvent e) { doSearch(); }
-            public void changedUpdate(DocumentEvent e) { doSearch(); }
-
-            private void doSearch() {
-                String key = txtSearch.getText().trim();
-                if (key.isEmpty() || key.equals("Tìm kiếm...")) {
-                    loadListData();
-                } else {
-                    search(key);
-                }
-            }
-        });
-
-        btnDelete.addActionListener(e -> {
+        btnDelete.addActionListener(_ -> {
             if (selectedInvID == -1) return;
             if (showConfirm(this, "Xóa hóa đơn #" + selectedInvID + "? Hàng sẽ được hoàn kho.")) {
                 deleteInvoiceTransaction();
             }
         });
+
+        btnPrint.addActionListener(_ -> printInvoice());
     }
+
 
     private void createNewInvoice() {
         Connection con = null;
@@ -444,8 +518,8 @@ public class InvoiceManagerPanel extends JPanel {
             ComboItem sta = (ComboItem) cbStaff.getSelectedItem();
             double total = Double.parseDouble(txtTotalMoney.getText().replace(",", ""));
 
-            psInv.setInt(1, cus.getValue());
-            psInv.setInt(2, sta.getValue());
+            psInv.setInt(1, Objects.requireNonNull(cus).getValue());
+            psInv.setInt(2, Objects.requireNonNull(sta).getValue());
             psInv.setDouble(3, total);
             psInv.executeUpdate();
 
@@ -475,7 +549,14 @@ public class InvoiceManagerPanel extends JPanel {
             con.commit();
             showSuccess(this, "Tạo hóa đơn thành công! Mã: #" + newInvID);
             loadListData();
-            listInvoice.setSelectedValue("HĐ #" + newInvID + " - " + cus.toString(), true);
+
+            for (int i = 0; i < listInvoice.getModel().getSize(); i++) {
+                ComboItem item = listInvoice.getModel().getElementAt(i);
+                if (item.getValue() == newInvID) {
+                    listInvoice.setSelectedIndex(i);
+                    break;
+                }
+            }
             loadDetail(newInvID);
 
         } catch (Exception ex) {
@@ -536,8 +617,8 @@ public class InvoiceManagerPanel extends JPanel {
             ComboItem sta = (ComboItem) cbStaff.getSelectedItem();
             double total = Double.parseDouble(txtTotalMoney.getText().replace(",", ""));
 
-            psHead.setInt(1, cus.getValue());
-            psHead.setInt(2, sta.getValue());
+            psHead.setInt(1, Objects.requireNonNull(cus).getValue());
+            psHead.setInt(2, Objects.requireNonNull(sta).getValue());
             psHead.setDouble(3, total);
             psHead.setInt(4, selectedInvID);
             psHead.executeUpdate();
@@ -547,10 +628,70 @@ public class InvoiceManagerPanel extends JPanel {
             loadDetail(selectedInvID);
 
         } catch (Exception ex) {
-            try { if(con!=null) con.rollback(); } catch(Exception e) {}
+            try { if(con!=null) con.rollback(); } catch(Exception _) {}
             showError(this, "Lỗi cập nhật: " + ex.getMessage());
         } finally {
-            try { if(con!=null) { con.setAutoCommit(true); con.close(); } } catch(Exception e){}
+            try { if(con!=null) { con.setAutoCommit(true); con.close(); } } catch(Exception _){}
+        }
+    }
+
+    private void printInvoice() {
+        if (selectedInvID == -1) return;
+
+        try {
+            StringBuilder bill = new StringBuilder();
+            bill.append("<html>");
+            bill.append("<head><style>");
+            bill.append("body { font-family: Monospaced; font-size: 12px; }");
+            bill.append("h2 { text-align: center; }");
+            bill.append(".line { border-bottom: 1px dashed black; }");
+            bill.append(".right { text-align: right; }");
+            bill.append("table { width: 100%; border-collapse: collapse; }");
+            bill.append("td, th { padding: 5px; text-align: left; }");
+            bill.append(".num { text-align: right; }");
+            bill.append("</style></head><body>");
+            bill.append("<h2>HÓA ĐƠN BÁN HÀNG</h2>");
+            bill.append("<p style='text-align:center'>Mã số: #").append(selectedInvID).append("</p>");
+            bill.append("<p style='text-align:center'>Ngày: ").append(txtDate.getText()).append("</p>");
+            bill.append("<div class='line'></div>");
+            bill.append("<p><b>Khách hàng:</b> ").append(cbCustomer.getSelectedItem()).append("</p>");
+            bill.append("<p><b>Nhân viên:</b> ").append(cbStaff.getSelectedItem()).append("</p>");
+            bill.append("<br>");
+            bill.append("<table>");
+            bill.append("<tr><th>Sản phẩm</th><th class='num'>SL</th><th class='num'>Đ.Giá</th><th class='num'>T.Tiền</th></tr>");
+
+            for (int i = 0; i < detailModel.getRowCount(); i++) {
+                String name = detailModel.getValueAt(i, 1).toString();
+                String price = detailModel.getValueAt(i, 2).toString();
+                String qty = detailModel.getValueAt(i, 3).toString();
+                String total = detailModel.getValueAt(i, 4).toString();
+
+                bill.append("<tr>");
+                bill.append("<td>").append(name).append("</td>");
+                bill.append("<td class='num'>").append(qty).append("</td>");
+                bill.append("<td class='num'>").append(price).append("</td>");
+                bill.append("<td class='num'>").append(total).append("</td>");
+                bill.append("</tr>");
+            }
+            bill.append("</table>");
+
+            bill.append("<div class='line'></div>");
+            bill.append("<h3 class='right'>TỔNG CỘNG: ").append(txtTotalMoney.getText()).append(" VND</h3>");
+
+            bill.append("<br><p style='text-align:center; font-style:italic;'>Cảm ơn quý khách và hẹn gặp lại!</p>");
+            bill.append("</body></html>");
+
+            JTextPane printingComponent = new JTextPane();
+            printingComponent.setContentType("text/html");
+            printingComponent.setText(bill.toString());
+
+            boolean complete = printingComponent.print(null, null, true, null, null, true);
+            if (complete) {
+                showSuccess(this, "Đã gửi lệnh in thành công!");
+            }
+
+        } catch (Exception ex) {
+            showError(this, "Lỗi in ấn: " + ex.getMessage());
         }
     }
 
@@ -607,7 +748,7 @@ public class InvoiceManagerPanel extends JPanel {
         try (Connection con = DBConnection.getConnection()) {
             ResultSet rs = con.createStatement().executeQuery("SELECT pro_price FROM Products WHERE pro_ID=" + proID);
             if(rs.next()) return rs.getDouble(1);
-        } catch(Exception e){}
+        } catch(Exception _){}
         return 0;
     }
 
@@ -668,6 +809,7 @@ public class InvoiceManagerPanel extends JPanel {
         listInvoice.clearSelection();
         btnSave.setVisible(false);
         btnDelete.setVisible(false);
+        btnPrint.setVisible(false);
         setDetailButtonsVisible(false);
 
         enableForm(false);
@@ -680,51 +822,12 @@ public class InvoiceManagerPanel extends JPanel {
         cbStaff.removeAllItems();
         loadComboBoxData();
         loadListData();
-        clearForm();
-    }
-
-    private void checkChange() { if (!isDataLoading) btnSave.setVisible(true); }
-
-    private void search(String keyword) {
-        DefaultListModel<String> model = new DefaultListModel<>();
-        try (Connection con = DBConnection.getConnection()) {
-            String sql = "SELECT i.inv_ID, c.cus_name " +
-                    "FROM Invoices i " +
-                    "LEFT JOIN Customers c ON i.cus_ID = c.cus_ID " +
-                    "WHERE i.inv_ID LIKE ? OR c.cus_name LIKE ? " +
-                    "ORDER BY i.inv_ID DESC";
-
-            PreparedStatement ps = con.prepareStatement(sql);
-            String searchPattern = "%" + keyword + "%";
-
-            ps.setString(1, searchPattern);
-            ps.setString(2, searchPattern);
-
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                String cusName = rs.getString("cus_name");
-                if (cusName == null) cusName = "Khách vãng lai";
-
-                model.addElement("HĐ #" + rs.getInt("inv_ID") + " - " + cusName);
-            }
-            listInvoice.setModel(model);
-
-        } catch (Exception e) {
-            showError(this, "Lỗi: " + e.getMessage());
-        }
     }
 
     private void addChangeListeners() {
-        cbCustomer.addActionListener(e -> checkChange());
-        cbStaff.addActionListener(e -> checkChange());
+        cbCustomer.addActionListener(_ -> checkChange());
+        cbStaff.addActionListener(_ -> checkChange());
     }
 
-    @FunctionalInterface interface DocumentUpdateListener { void update(DocumentEvent e); }
-    static class SimpleDocumentListener implements DocumentListener {
-        private final DocumentUpdateListener listener;
-        public SimpleDocumentListener(DocumentUpdateListener listener) { this.listener = listener; }
-        public void insertUpdate(DocumentEvent e) { listener.update(e); }
-        public void removeUpdate(DocumentEvent e) { listener.update(e); }
-        public void changedUpdate(DocumentEvent e) { listener.update(e); }
-    }
+    private void checkChange() { if (!isDataLoading) btnSave.setVisible(true); }
 }

@@ -5,8 +5,6 @@ import JDBCUntils.DBConnection;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
@@ -19,14 +17,14 @@ public class AddSupplierForm extends JDialog {
     private boolean isAdded = false;
 
     public AddSupplierForm(Frame parent) {
-        super(parent, true); // Modal = true (chặn form cha)
+        super(parent, true);
         this.setTitle("Thêm Nhà Cung Cấp Mới");
         initUI();
         addEvents();
 
-        this.pack(); // Tự động co giãn kích thước vừa với nội dung
-        this.setLocationRelativeTo(parent); // Hiện giữa form cha
-        this.setResizable(false); // Không cho kéo giãn lung tung
+        this.pack();
+        this.setLocationRelativeTo(parent);
+        this.setResizable(false);
     }
 
     private void initUI() {
@@ -72,35 +70,32 @@ public class AddSupplierForm extends JDialog {
     }
 
     private void addEvents() {
-        btnSave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
-                    showError(AddSupplierForm.this, "Vui lòng nhập đầy đủ thông tin!");
-                    return;
+        btnSave.addActionListener(_ -> {
+            if (txtName.getText().trim().isEmpty() || txtPhone.getText().trim().isEmpty() || txtAddress.getText().trim().isEmpty()) {
+                showError(AddSupplierForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            try (Connection con = DBConnection.getConnection()) {
+                String sql = "INSERT INTO Suppliers (sup_name, sup_phone, sup_address) VALUES (?, ?, ?)";
+
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, txtName.getText().trim());
+                ps.setString(2, txtPhone.getText().trim());
+                ps.setString(3, txtAddress.getText().trim());
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    showSuccess(AddSupplierForm.this, "Thêm thành công!");
+                    isAdded = true;
+                    dispose();
                 }
-
-                try (Connection con = DBConnection.getConnection()) {
-                    String sql = "INSERT INTO Suppliers (sup_name, sup_phone, sup_address) VALUES (?, ?, ?)";
-
-                    PreparedStatement ps = con.prepareStatement(sql);
-                    ps.setString(1, txtName.getText().trim());
-                    ps.setString(2, txtPhone.getText().trim());
-                    ps.setString(3, txtAddress.getText().trim());
-
-                    int rows = ps.executeUpdate();
-                    if (rows > 0) {
-                        showSuccess(AddSupplierForm.this, "Thêm thành công!");
-                        isAdded = true;
-                        dispose();
-                    }
-                } catch (Exception ex) {
-                    showError(AddSupplierForm.this, "Lỗi: " + ex.getMessage());
-                }
+            } catch (Exception ex) {
+                showError(AddSupplierForm.this, "Lỗi: " + ex.getMessage());
             }
         });
 
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
 
     public boolean isAddedSuccess() {

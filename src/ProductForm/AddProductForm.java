@@ -5,8 +5,6 @@ import JDBCUntils.DBConnection;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -116,67 +114,64 @@ public class AddProductForm extends JDialog {
     }
 
     private void addEvents() {
-        btnSave.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (txtName.getText().trim().isEmpty() ||
-                        txtPrice.getText().trim().isEmpty() ||
-                        txtCount.getText().trim().isEmpty()) {
-                    showError(AddProductForm.this, "Vui lòng nhập đầy đủ thông tin!");
-                    return;
+        btnSave.addActionListener(_ -> {
+            if (txtName.getText().trim().isEmpty() ||
+                    txtPrice.getText().trim().isEmpty() ||
+                    txtCount.getText().trim().isEmpty()) {
+                showError(AddProductForm.this, "Vui lòng nhập đầy đủ thông tin!");
+                return;
+            }
+
+            try (Connection con = DBConnection.getConnection()) {
+                String selectedTypeName = (String) cbType.getSelectedItem();
+                int typeID = 0;
+
+                if (selectedTypeName != null) {
+                    String sqlGetTypeID = "SELECT type_ID FROM ProductTypes WHERE type_name = ?";
+                    PreparedStatement psType = con.prepareStatement(sqlGetTypeID);
+                    psType.setString(1, selectedTypeName);
+                    ResultSet rsType = psType.executeQuery();
+                    if (rsType.next()) {
+                        typeID = rsType.getInt("type_ID");
+                    }
                 }
 
-                try (Connection con = DBConnection.getConnection()) {
-                    String selectedTypeName = (String) cbType.getSelectedItem();
-                    int typeID = 0;
+                String selectedSupName = (String) cbSupplier.getSelectedItem();
+                int supID = 0;
 
-                    if (selectedTypeName != null) {
-                        String sqlGetTypeID = "SELECT type_ID FROM ProductTypes WHERE type_name = ?";
-                        PreparedStatement psType = con.prepareStatement(sqlGetTypeID);
-                        psType.setString(1, selectedTypeName);
-                        ResultSet rsType = psType.executeQuery();
-                        if (rsType.next()) {
-                            typeID = rsType.getInt("type_ID");
-                        }
+                if (selectedSupName != null) {
+                    String sqlGetSupplierID = "SELECT sup_ID FROM Suppliers WHERE sup_name = ?";
+                    PreparedStatement psID = con.prepareStatement(sqlGetSupplierID);
+                    psID.setString(1, selectedSupName);
+                    ResultSet rsID = psID.executeQuery();
+                    if (rsID.next()) {
+                        supID = rsID.getInt("sup_ID");
                     }
-
-                    String selectedSupName = (String) cbSupplier.getSelectedItem();
-                    int supID = 0;
-
-                    if (selectedSupName != null) {
-                        String sqlGetSupplierID = "SELECT sup_ID FROM Suppliers WHERE sup_name = ?";
-                        PreparedStatement psID = con.prepareStatement(sqlGetSupplierID);
-                        psID.setString(1, selectedSupName);
-                        ResultSet rsID = psID.executeQuery();
-                        if (rsID.next()) {
-                            supID = rsID.getInt("sup_ID");
-                        }
-                    }
-
-
-                    String sql = "INSERT INTO Products (pro_name, pro_price, pro_count, type_ID, sup_ID) VALUES (?, ?, ?, ?, ?)";
-                    PreparedStatement ps = con.prepareStatement(sql);
-                    ps.setString(1, txtName.getText().trim());
-                    ps.setDouble(2, Double.parseDouble(txtPrice.getText().trim()));
-                    ps.setInt(3, Integer.parseInt(txtCount.getText().trim()));
-                    ps.setInt(4, typeID);
-                    ps.setInt(5, supID);
-
-                    int rows = ps.executeUpdate();
-                    if (rows > 0) {
-                        showSuccess(AddProductForm.this, "Thêm sản phẩm thành công!");
-                        isAdded = true;
-                        dispose();
-                    }
-                } catch (NumberFormatException nfe) {
-                    showError(AddProductForm.this, "Lỗi: Giá, Số lượng và ID phải là số hợp lệ!");
-                } catch (Exception ex) {
-                    showError(AddProductForm.this, "Lỗi CSDL: " + ex.getMessage());
                 }
+
+
+                String sql = "INSERT INTO Products (pro_name, pro_price, pro_count, type_ID, sup_ID) VALUES (?, ?, ?, ?, ?)";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, txtName.getText().trim());
+                ps.setDouble(2, Double.parseDouble(txtPrice.getText().trim()));
+                ps.setInt(3, Integer.parseInt(txtCount.getText().trim()));
+                ps.setInt(4, typeID);
+                ps.setInt(5, supID);
+
+                int rows = ps.executeUpdate();
+                if (rows > 0) {
+                    showSuccess(AddProductForm.this, "Thêm sản phẩm thành công!");
+                    isAdded = true;
+                    dispose();
+                }
+            } catch (NumberFormatException nfe) {
+                showError(AddProductForm.this, "Lỗi: Giá, Số lượng và ID phải là số hợp lệ!");
+            } catch (Exception ex) {
+                showError(AddProductForm.this, "Lỗi CSDL: " + ex.getMessage());
             }
         });
 
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
 
     public boolean isAddedSuccess() {

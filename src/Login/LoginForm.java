@@ -16,7 +16,6 @@ import static JDBCUntils.Style.*;
 public class LoginForm extends JFrame {
     private JTextField txtUsername;
     private JPasswordField txtPassword;
-    private JButton btnLogin, btnExit;
 
     public LoginForm() {
         setTitle("Đăng Nhập Hệ Thống");
@@ -33,24 +32,26 @@ public class LoginForm extends JFrame {
         mainPanel.setBackground(Color.WHITE);
 
         JLabel lblTitle = createHeaderLabel("ĐĂNG NHẬP");
+        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         mainPanel.add(lblTitle);
         mainPanel.add(Box.createVerticalStrut(30));
 
         txtUsername = new JTextField();
         JPanel pUser = createTextFieldWithLabel(txtUsername, "Tài khoản:");
         mainPanel.add(pUser);
-        mainPanel.add(Box.createVerticalStrut(15));
+        mainPanel.add(Box.createVerticalStrut(20));
 
         txtPassword = new JPasswordField();
-        JPanel pPass = createTextFieldWithLabel((JTextField)txtPassword, "Mật khẩu:");
+        JPanel pPass = createPasswordFieldWithLabel(txtPassword, "Mật khẩu:");
         mainPanel.add(pPass);
         mainPanel.add(Box.createVerticalStrut(30));
 
 
         JPanel pBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         pBtn.setBackground(Color.WHITE);
-        btnLogin = createButton("Đăng Nhập", new Color(46, 204, 113));
-        btnExit = createButton("Thoát", new Color(231, 76, 60));
+        JButton btnLogin = createButton("Đăng Nhập", new Color(46, 204, 113));
+        JButton btnExit = createButton("Thoát", new Color(231, 76, 60));
 
         pBtn.add(btnLogin);
         pBtn.add(btnExit);
@@ -58,8 +59,8 @@ public class LoginForm extends JFrame {
 
         add(mainPanel);
 
-        btnExit.addActionListener(e -> System.exit(0));
-        btnLogin.addActionListener(e -> checkLogin());
+        btnExit.addActionListener(_ -> System.exit(0));
+        btnLogin.addActionListener(_ -> checkLogin());
         getRootPane().setDefaultButton(btnLogin);
     }
 

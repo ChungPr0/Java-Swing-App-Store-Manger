@@ -12,7 +12,7 @@ public class EditInvoiceDetailDialog extends JDialog {
 
     private boolean isConfirmed = false;
     private int newQuantity = 0;
-    private int limit = 0;
+    private final int limit;
     public EditInvoiceDetailDialog(Frame parent, String productName, int currentQty, int limit) {
         super(parent, true);
         setTitle("Chỉnh Sửa Số Lượng");
@@ -74,7 +74,7 @@ public class EditInvoiceDetailDialog extends JDialog {
     }
 
     private void addEvents() {
-        btnSave.addActionListener(e -> {
+        btnSave.addActionListener(_ -> {
             try {
                 int qty = Integer.parseInt(txtQuantity.getText().trim());
 
@@ -99,7 +99,7 @@ public class EditInvoiceDetailDialog extends JDialog {
             }
         });
 
-        btnCancel.addActionListener(e -> dispose());
+        btnCancel.addActionListener(_ -> dispose());
     }
 
     public boolean isConfirmed() { return isConfirmed; }
