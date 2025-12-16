@@ -334,24 +334,24 @@ db.password=
 
 ## 🚀 HƯỚNG DẪN CHẠY PHẦN MỀM
 
-Sau khi Build dự án ra file `.jar` (ví dụ `QuanLyBanHang.jar`), bạn cần đảm bảo cấu trúc thư mục đúng như sau:
+Sau khi Build dự án ra file `.jar` (ví dụ `StoreManager.jar`), bạn cần đảm bảo cấu trúc thư mục đúng như sau:
 
 ### 1. Cấu trúc thư mục chuẩn
 ```text
 D:\PhanMemBanHang\
-   ├── ☕ QuanLyBanHang.jar   (File phần mềm chính)
+   ├── ☕ StoreManager.jar   (File phần mềm chính)
    └── 📄 config.properties   (File cấu hình đã tạo ở trên)
 ```
 
 ### 2. Cách chạy phần mềm
 Bạn có thể chọn 1 trong 2 cách sau:
 
-* **Cách 1 (Nhanh):** Double click trực tiếp vào file `QuanLyBanHang.jar`.
+* **Cách 1 (Nhanh):** Double click trực tiếp vào file `StoreManager.jar`.
 * **Cách 2 (Khuyên dùng):** Chạy bằng dòng lệnh để xem thông báo lỗi (nếu có).
     1.  Tại thư mục chứa file, gõ `cmd` vào thanh địa chỉ -> Nhấn **Enter**.
     2.  Gõ lệnh sau:
     ```bash
-    java -jar QuanLyBanHang.jar
+    java -jar StoreManager.jar
     ```
 
 ---
@@ -401,7 +401,7 @@ Khởi động phần mềm và sử dụng các tài khoản mặc định sau 
 
 ---
 
-<p>
-  <b>© 2025 Copyright by Chung. All rights reserved.</b><br>
-  <i>Designed with ❤️ using Java Swing & MySQL.</i>
-</p>
+<div style="text-align: center;">
+<b>© 2025 Copyright by Chung. All rights reserved.</b><br>
+<i>Designed with ❤️ using Java Swing & MySQL.</i>
+</div>
