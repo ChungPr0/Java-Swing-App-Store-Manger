@@ -1,20 +1,18 @@
-package Main;
-
-import Login.LoginForm;
+import Main.Login.LoginForm;
 import JDBCUtils.DBConnection;
 
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 
-public class MainRun {
+public class Run {
 
     /**
      * Hàm main: Điểm khởi chạy của toàn bộ chương trình.
      * Sử dụng invokeLater để đảm bảo luồng giao diện (EDT) chạy an toàn.
      */
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(MainRun::createAndShowGUI);
+        SwingUtilities.invokeLater(Run::createAndShowGUI);
     }
 
     /**

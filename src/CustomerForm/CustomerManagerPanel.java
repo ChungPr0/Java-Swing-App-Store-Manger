@@ -140,7 +140,7 @@ public class CustomerManagerPanel extends JPanel {
     }
 
     // Tải chi tiết 1 khách hàng (Right Panel)
-    private void loadDetail(int id) {
+    public void loadDetail(int id) {
         isDataLoading = true; // Chặn sự kiện text change
         try (Connection con = DBConnection.getConnection()) {
             String sql = "SELECT * FROM Customers WHERE cus_id = ?";

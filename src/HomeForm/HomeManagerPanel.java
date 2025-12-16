@@ -1,27 +1,33 @@
 package HomeForm;
 
-import Main.DashBoard;
 import JDBCUtils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.text.DecimalFormat;
 
 import static JDBCUtils.Style.*;
 
 public class HomeManagerPanel extends JPanel {
-    private JLabel lblRevenue, lblProductCount, lblCustomerCount, lblOrderCount;
-    private JTable tableRecent;
+    private JLabel lblRevenue7Days, lblItemsSold7Days, lblActiveCustomers7Days, lblOrders7Days;
     private JButton btnRefresh;
-    private DefaultTableModel tableModel;
+    private JPanel pRevCard, pItemCard, pCusCard, pOrdCard;
+
+    private JPanel bottomPanel;
+    private CardLayout bottomCardLayout;
+
+    private RevenueChartPanel chartPanel;
+    private ProductStatsPanel productPanel;
+    private CustomerStatsPanel customerPanel;
+    private InvoiceStatsPanel invoicePanel;
 
     public HomeManagerPanel() {
         initUI();
-        loadDashboardData();
+        refreshData();
         addEvents();
     }
 
@@ -32,13 +38,11 @@ public class HomeManagerPanel extends JPanel {
 
         JPanel pHeader = new JPanel(new BorderLayout());
         pHeader.setOpaque(false);
+        JLabel lblTitle = createHeaderLabel("TỔNG QUAN 7 NGÀY QUA");
 
-        JLabel lblTitle = createHeaderLabel("TỔNG QUAN CỬA HÀNG");
-        btnRefresh = createButton("Làm mới dữ liệu", Color.GRAY);
-
+        btnRefresh = createSmallButton("Mới", Color.GRAY);
         pHeader.add(lblTitle, BorderLayout.WEST);
         pHeader.add(btnRefresh, BorderLayout.EAST);
-
         this.add(pHeader, BorderLayout.NORTH);
 
         JPanel pCenter = new JPanel();
@@ -49,119 +53,115 @@ public class HomeManagerPanel extends JPanel {
         pStats.setOpaque(false);
         pStats.setMaximumSize(new Dimension(Integer.MAX_VALUE, 120));
 
-        lblRevenue = new JLabel("0 đ");
-        lblProductCount = new JLabel("0");
-        lblCustomerCount = new JLabel("0");
-        lblOrderCount = new JLabel("0");
+        lblRevenue7Days = new JLabel("0 đ");
+        lblItemsSold7Days = new JLabel("0");
+        lblActiveCustomers7Days = new JLabel("0");
+        lblOrders7Days = new JLabel("0");
 
-        pStats.add(createCard("DOANH THU", lblRevenue, new Color(46, 204, 113), "assets/icons/money.png"));
-            pStats.add(createCard("SẢN PHẨM", lblProductCount, new Color(52, 152, 219), "assets/icons/box.png"));
-        pStats.add(createCard("KHÁCH HÀNG", lblCustomerCount, new Color(243, 156, 18), "assets/icons/customer.png"));
-        pStats.add(createCard("HÓA ĐƠN", lblOrderCount, new Color(155, 89, 182), "assets/icons/bill.png"));
+        pRevCard = JDBCUtils.Style.createCard("DOANH THU", lblRevenue7Days, new Color(46, 204, 113), "assets/icons/money.png");
+        pItemCard = JDBCUtils.Style.createCard("SẢN PHẨM", lblItemsSold7Days, new Color(52, 152, 219), "assets/icons/box.png");
+        pCusCard = JDBCUtils.Style.createCard("KHÁCH HÀNG", lblActiveCustomers7Days, new Color(243, 156, 18), "assets/icons/customer.png");
+        pOrdCard = JDBCUtils.Style.createCard("ĐƠN HÀNG", lblOrders7Days, new Color(155, 89, 182), "assets/icons/bill.png");
+
+        pRevCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        pItemCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        pCusCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        pOrdCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        pStats.add(pRevCard);
+        pStats.add(pItemCard);
+        pStats.add(pCusCard);
+        pStats.add(pOrdCard);
 
         pCenter.add(pStats);
         pCenter.add(Box.createVerticalStrut(20));
 
-        JPanel pTableSection = new JPanel(new BorderLayout());
-        pTableSection.setBackground(Color.WHITE);
-        pTableSection.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1),
-                new EmptyBorder(10, 10, 10, 10)
-        ));
+        bottomCardLayout = new CardLayout();
+        bottomPanel = new JPanel(bottomCardLayout);
+        bottomPanel.setOpaque(false);
 
-        JLabel lblTableTitle = createTitleLabel("Đơn hàng gần đây");
+        chartPanel = new RevenueChartPanel();
+        productPanel = new ProductStatsPanel();
+        customerPanel = new CustomerStatsPanel();
+        invoicePanel = new InvoiceStatsPanel();
 
-        String[] columns = {"Mã HĐ", "Khách Hàng", "Nhân Viên", "Tổng Tiền"};
-        tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tableRecent = new JTable(tableModel);
-        tableRecent.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        tableRecent.setRowHeight(30);
-        tableRecent.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        tableRecent.getTableHeader().setBackground(Color.decode("#ecf0f1"));
+        bottomPanel.add(chartPanel, "REVENUE");
+        bottomPanel.add(productPanel, "PRODUCT");
+        bottomPanel.add(customerPanel, "CUSTOMER");
+        bottomPanel.add(invoicePanel, "INVOICE");
 
-        pTableSection.add(lblTableTitle, BorderLayout.NORTH);
-        pTableSection.add(new JScrollPane(tableRecent), BorderLayout.CENTER);
+        bottomCardLayout.show(bottomPanel, "REVENUE");
 
-        pCenter.add(pTableSection);
-
+        pCenter.add(bottomPanel);
         this.add(pCenter, BorderLayout.CENTER);
     }
 
-    private void loadDashboardData() {
-        try (Connection con = DBConnection.getConnection()) {
-            DecimalFormat df = new DecimalFormat("#,### VND");
-
-            String sqlRev = "SELECT SUM(inv_price) FROM Invoices";
-            ResultSet rsRev = con.createStatement().executeQuery(sqlRev);
-            if (rsRev.next()) {
-                double rev = rsRev.getDouble(1);
-                lblRevenue.setText(df.format(rev));
-            }
-
-            ResultSet rsPro = con.createStatement().executeQuery("SELECT COUNT(*) FROM Products");
-            if (rsPro.next()) lblProductCount.setText(String.valueOf(rsPro.getInt(1)));
-
-            ResultSet rsCus = con.createStatement().executeQuery("SELECT COUNT(*) FROM Customers");
-            if (rsCus.next()) lblCustomerCount.setText(String.valueOf(rsCus.getInt(1)));
-
-            ResultSet rsInv = con.createStatement().executeQuery("SELECT COUNT(*) FROM Invoices");
-            if (rsInv.next()) lblOrderCount.setText(String.valueOf(rsInv.getInt(1)));
-
-            tableModel.setRowCount(0);
-            String sqlTable = "SELECT i.inv_ID, c.cus_name, s.sta_name, i.inv_price " +
-                    "FROM Invoices i " +
-                    "LEFT JOIN Customers c ON i.cus_ID = c.cus_ID " +
-                    "LEFT JOIN Staffs s ON i.sta_ID = s.sta_ID " +
-                    "ORDER BY i.inv_ID DESC LIMIT 10";
-
-            ResultSet rsTable = con.createStatement().executeQuery(sqlTable);
-            while (rsTable.next()) {
-                tableModel.addRow(new Object[]{
-                        rsTable.getInt("inv_ID"),
-                        rsTable.getString("cus_name"),
-                        rsTable.getString("sta_name"),
-                        df.format(rsTable.getDouble("inv_price"))
-                });
-            }
-
-        } catch (Exception e) {
-            showError(this, "Lỗi: " + e.getMessage());
-        }
-    }
-
     private void addEvents() {
-        btnRefresh.addActionListener(_ -> loadDashboardData());
+        btnRefresh.addActionListener(_ -> refreshData());
 
-        tableRecent.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                if (evt.getClickCount() == 2) {
-                    int row = tableRecent.getSelectedRow();
-                    if (row == -1) return;
+        pRevCard.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                chartPanel.loadChartData();
+                bottomCardLayout.show(bottomPanel, "REVENUE");
+            }
+        });
 
-                    try {
-                        int invID = Integer.parseInt(tableRecent.getValueAt(row, 0).toString());
+        pItemCard.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                productPanel.loadData();
+                bottomCardLayout.show(bottomPanel, "PRODUCT");
+            }
+        });
 
-                        Window win = SwingUtilities.getWindowAncestor(HomeManagerPanel.this);
+        pCusCard.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                customerPanel.loadData();
+                bottomCardLayout.show(bottomPanel, "CUSTOMER");
+            }
+        });
 
-                        if (win instanceof DashBoard dashboard) {
-                            dashboard.showInvoiceAndLoad(invID);
-                        }
-
-                    } catch (Exception ex) {
-                        showError(HomeManagerPanel.this, "Lỗi: " + ex.getMessage());
-                    }
-                }
+        pOrdCard.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                invoicePanel.loadData();
+                bottomCardLayout.show(bottomPanel, "INVOICE");
             }
         });
     }
 
+    private String formatSmartMoney(double val) {
+        if (val >= 1000000) {
+            double tr = val / 1000000.0;
+            return (tr == (long) tr) ? String.format("%d Tr", (long) tr) : String.format("%.1f Tr", tr);
+        } else {
+            return String.format("%d K", (long) (val / 1000));
+        }
+    }
+
     public void refreshData() {
-        loadDashboardData();
+        try (Connection con = DBConnection.getConnection()) {
+            String sqlRev = "SELECT SUM(inv_price) FROM Invoices WHERE inv_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            ResultSet rsRev = con.createStatement().executeQuery(sqlRev);
+            if (rsRev.next()) lblRevenue7Days.setText(formatSmartMoney(rsRev.getDouble(1)));
+
+            String sqlItems = "SELECT SUM(d.ind_count) FROM Invoice_details d JOIN Invoices i ON d.inv_ID = i.inv_ID WHERE i.inv_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            ResultSet rsItems = con.createStatement().executeQuery(sqlItems);
+            if (rsItems.next()) lblItemsSold7Days.setText(String.valueOf(rsItems.getInt(1)));
+
+            String sqlCus = "SELECT COUNT(DISTINCT cus_ID) FROM Invoices WHERE inv_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            ResultSet rsCus = con.createStatement().executeQuery(sqlCus);
+            if (rsCus.next()) lblActiveCustomers7Days.setText(String.valueOf(rsCus.getInt(1)));
+
+            String sqlOrd = "SELECT COUNT(*) FROM Invoices WHERE inv_date >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+            ResultSet rsOrd = con.createStatement().executeQuery(sqlOrd);
+            if (rsOrd.next()) lblOrders7Days.setText(String.valueOf(rsOrd.getInt(1)));
+
+        } catch (Exception e) {
+            showError(this, "Lỗi: " + e.getMessage());
+        }
+
+        if (chartPanel.isVisible()) chartPanel.loadChartData();
+        if (productPanel.isVisible()) productPanel.loadData();
+        if (customerPanel.isVisible()) customerPanel.loadData();
+        if (invoicePanel.isVisible()) invoicePanel.loadData();
     }
 }

@@ -154,6 +154,45 @@ public class Style {
         return createComboBoxWithLabel(box, labelText, btn, null);
     }
 
+    /**
+     * Hàm nhận vào một JTable thô, trang trí nó, thêm tiêu đề và trả về một JPanel hoàn chỉnh.
+     */
+    public static JPanel createTableWithLabel(JTable table, String titleText) {
+        table.setRowHeight(35);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        table.setShowVerticalLines(true);
+        table.setShowHorizontalLines(true);
+
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.getTableHeader().setBackground(Color.decode("#ecf0f1"));
+        table.getTableHeader().setForeground(Color.decode("#2c3e50"));
+
+        JLabel lblTitle = new JLabel(titleText, SwingConstants.CENTER);
+        lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        lblTitle.setForeground(Color.decode("#2c3e50"));
+        lblTitle.setBorder(new EmptyBorder(5, 0, 15, 0));
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1),
+                new EmptyBorder(10, 10, 10, 10)
+        ));
+
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBorder(BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1));
+
+        scroll.getViewport().setBackground(Color.WHITE);
+
+        panel.add(scroll, BorderLayout.CENTER);
+
+        return panel;
+    }
+
     // --- HÀM TẠO THANH TÌM KIẾM ---
 
     /**
@@ -594,7 +633,7 @@ public class Style {
     private static void createStyleComboBox(JComboBox<String> box) {
         box.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         box.setBackground(Color.WHITE);
-        box.setPreferredSize(new Dimension(80, 35));
+        box.setPreferredSize(new Dimension(80, 34));
         box.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 

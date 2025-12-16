@@ -1,4 +1,4 @@
-package Login;
+package Main.Login;
 
 import JDBCUtils.DBConnection;
 import JDBCUtils.Session;

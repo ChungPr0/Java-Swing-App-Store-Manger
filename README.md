@@ -2,7 +2,7 @@
 
 ![Java](https://img.shields.io/badge/Language-Java_17+-orange?style=for-the-badge&logo=java)
 ![Database](https://img.shields.io/badge/Database-MySQL-blue?style=for-the-badge&logo=mysql)
-![Version](https://img.shields.io/badge/Version-1.0.0-green?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-1.3.0-green?style=for-the-badge)
 
 > **Giải pháp quản lý bán hàng toàn diện, đơn giản và hiệu quả dành cho cửa hàng vừa và nhỏ.**
 
@@ -339,7 +339,7 @@ Sau khi Build dự án ra file `.jar` (ví dụ `StoreManager.jar`), bạn cần
 ### 1. Cấu trúc thư mục chuẩn
 ```text
 D:\PhanMemBanHang\
-   ├── ☕ StoreManager.jar   (File phần mềm chính)
+   ├── ☕ StoreManager.jar    (File phần mềm chính)
    └── 📄 config.properties   (File cấu hình đã tạo ở trên)
 ```
 

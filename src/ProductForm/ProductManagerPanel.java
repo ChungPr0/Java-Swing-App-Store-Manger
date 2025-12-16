@@ -207,7 +207,7 @@ public class ProductManagerPanel extends JPanel {
     }
 
     // 4.4 Tải chi tiết 1 sản phẩm (Right Panel)
-    private void loadDetail(int id) {
+    public void loadDetail(int id) {
         isDataLoading = true;
         try (Connection con = DBConnection.getConnection()) {
             String sql = "SELECT * FROM Products WHERE pro_id = ?";

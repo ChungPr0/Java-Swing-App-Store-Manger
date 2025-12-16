@@ -4,8 +4,8 @@ import CustomerForm.CustomerManagerPanel;
 import HomeForm.HomeManagerPanel;
 import InvoiceForm.InvoiceManagerPanel;
 import JDBCUtils.Session;
-import Login.ChangePasswordDialog;
-import Login.LoginForm;
+import Main.Login.ChangePasswordDialog;
+import Main.Login.LoginForm;
 import ProductForm.ProductManagerPanel;
 import StaffForm.StaffManagerPanel;
 import SupplierForm.SupplierManagerPanel;
@@ -199,7 +199,30 @@ public class DashBoard extends JFrame {
     }
 
     /**
-     * Hàm Public để gọi từ các form con (ví dụ: Mở hóa đơn từ trang chủ)
+     * Hàm Public để gọi từ Dashboard (Click vào Sản phẩm -> Sang tab sản phẩm)
+     */
+    public void showProductAndLoad(int proID) {
+        cardLayout.show(contentPanel, "PRODUCT");
+        updateActiveButton(btnProduct);
+
+        if (productPanel != null) {
+            productPanel.loadDetail(proID);
+        }
+    }
+
+    /**
+     * Hàm Public để gọi từ Dashboard (Click vào Top khách hàng -> Sang tab khách hàng)
+     */
+    public void showCustomerAndLoad(int cusID) {
+        cardLayout.show(contentPanel, "CUSTOMER");
+        updateActiveButton(btnCustomer);
+        if (customerPanel != null) {
+            customerPanel.loadDetail(cusID);
+        }
+    }
+
+    /**
+     * Hàm Public để gọi từ Dashboard (Click vào Top hóa đơn -> Sang tab hóa đơn)
      */
     public void showInvoiceAndLoad(int invID) {
         cardLayout.show(contentPanel, "INVOICE");
