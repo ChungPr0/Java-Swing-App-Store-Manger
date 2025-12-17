@@ -5,6 +5,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 
+import static JDBCUtils.Style.showError;
+
 public class Run {
 
     /**
@@ -64,10 +66,7 @@ public class Run {
             return con != null;
         } catch (Exception e) {
             // Nếu lỗi, hiện thông báo cho người dùng biết
-            JOptionPane.showMessageDialog(null,
-                    "Lỗi kết nối CSDL: " + e.getMessage(),
-                    "Lỗi Khởi Động",
-                    JOptionPane.ERROR_MESSAGE);
+            showError(null, "Lỗi kết nối CSDL: " + e.getMessage());
         }
         return false;
     }

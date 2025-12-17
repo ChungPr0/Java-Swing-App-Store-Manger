@@ -158,10 +158,17 @@ public class Style {
      * Hàm nhận vào một JTable thô, trang trí nó, thêm tiêu đề và trả về một JPanel hoàn chỉnh.
      */
     public static JPanel createTableWithLabel(JTable table, String titleText) {
+        return createTableWithLabel(table, titleText, null);
+    }
+
+    /**
+     * Hàm nhận vào một JTable thô, trang trí nó, thêm tiêu đề, thêm nút nếu có và trả về một JPanel hoàn chỉnh.
+     */
+    public static JPanel createTableWithLabel(JTable table, String titleText, JButton actionButton) {
+        // --- A. Cấu hình bảng ---
         table.setRowHeight(35);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-
         table.setShowVerticalLines(true);
         table.setShowHorizontalLines(true);
 
@@ -169,11 +176,26 @@ public class Style {
         table.getTableHeader().setBackground(Color.decode("#ecf0f1"));
         table.getTableHeader().setForeground(Color.decode("#2c3e50"));
 
+        // --- B. Tạo Header (Tiêu đề + Nút) ---
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(Color.WHITE);
+        headerPanel.setBorder(new EmptyBorder(5, 0, 15, 0));
+
+        // Tiêu đề nằm giữa
         JLabel lblTitle = new JLabel(titleText, SwingConstants.CENTER);
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTitle.setForeground(Color.decode("#2c3e50"));
-        lblTitle.setBorder(new EmptyBorder(5, 0, 15, 0));
+        headerPanel.add(lblTitle, BorderLayout.CENTER);
 
+        // Nút chức năng nằm phải (Nếu có)
+        if (actionButton != null) {
+            JPanel btnWrapper = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+            btnWrapper.setBackground(Color.WHITE);
+            btnWrapper.add(actionButton);
+            headerPanel.add(btnWrapper, BorderLayout.EAST);
+        }
+
+        // --- C. Tạo Panel chính ---
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
@@ -181,11 +203,11 @@ public class Style {
                 new EmptyBorder(10, 10, 10, 10)
         ));
 
-        panel.add(lblTitle, BorderLayout.NORTH);
+        panel.add(headerPanel, BorderLayout.NORTH);
 
+        // --- D. ScrollPane ---
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1));
-
         scroll.getViewport().setBackground(Color.WHITE);
 
         panel.add(scroll, BorderLayout.CENTER);
@@ -306,7 +328,7 @@ public class Style {
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
-                btn.setBackground(bgColor.brighter());
+                btn.setBackground(bgColor.darker());
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 btn.setBackground(bgColor);
@@ -478,7 +500,7 @@ public class Style {
         pButton.setBorder(new javax.swing.border.EmptyBorder(0, 0, 15, 0));
 
         JButton btnYes = createButton("Xác Nhận", mainColor);
-        JButton btnNo = createButton("Hủy Bỏ", Color.LIGHT_GRAY);
+        JButton btnNo = createButton("Hủy Bỏ", Color.GRAY);
         btnYes.setPreferredSize(new Dimension(110, 35));
         btnNo.setPreferredSize(new Dimension(110, 35));
         btnNo.setBorder(BorderFactory.createLineBorder(Color.decode("#bdc3c7"), 1));
@@ -494,13 +516,13 @@ public class Style {
         });
 
         btnYes.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) { btnYes.setBackground(mainColor.brighter()); }
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnYes.setBackground(mainColor.darker()); }
             public void mouseExited(java.awt.event.MouseEvent evt) { btnYes.setBackground(mainColor); }
         });
 
         btnNo.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) { btnNo.setBackground(Color.LIGHT_GRAY.brighter()); }
-            public void mouseExited(java.awt.event.MouseEvent evt) { btnNo.setBackground(Color.LIGHT_GRAY); }
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnNo.setBackground(Color.GRAY.darker()); }
+            public void mouseExited(java.awt.event.MouseEvent evt) { btnNo.setBackground(Color.GRAY); }
         });
 
         pButton.add(btnYes);
@@ -541,7 +563,14 @@ public class Style {
         String title = isSuccess ? "THÀNH CÔNG" : "THẤT BẠI";
         int maxWidth = 400;
 
-        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(parent));
+        Window owner = null;
+        if (parent instanceof Window) {
+            owner = (Window) parent; // Nếu parent chính là cửa sổ (JFrame, JDialog)
+        } else if (parent != null) {
+            owner = SwingUtilities.getWindowAncestor(parent); // Nếu parent là nút/panel
+        }
+
+        JDialog dialog = new JDialog(owner);
         dialog.setModal(true);
         dialog.setUndecorated(true);
         dialog.setLayout(new BorderLayout());
@@ -583,7 +612,7 @@ public class Style {
         btnOK.addActionListener(_ -> dialog.dispose());
 
         btnOK.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) { btnOK.setBackground(mainColor.brighter()); }
+            public void mouseEntered(java.awt.event.MouseEvent evt) { btnOK.setBackground(mainColor.darker()); }
             public void mouseExited(java.awt.event.MouseEvent evt) { btnOK.setBackground(mainColor); }
         });
 

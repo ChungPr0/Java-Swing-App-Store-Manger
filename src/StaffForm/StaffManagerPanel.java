@@ -82,6 +82,7 @@ public class StaffManagerPanel extends JPanel {
         rowDateAndRole.setBackground(Color.WHITE);
         rowDateAndRole.add(datePanel);
         rowDateAndRole.add(pRoleWrapper);
+        rowDateAndRole.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
         rightPanel.add(rowDateAndRole);
         rightPanel.add(Box.createVerticalStrut(15));

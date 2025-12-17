@@ -216,6 +216,9 @@ public class ProductManagerPanel extends JPanel {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+                // Gán lại id để tránh lỗi
+                selectedProductID = rs.getInt("pro_id");
+
                 txtName.setText(rs.getString("pro_name"));
                 txtPrice.setText(String.format("%.0f", rs.getDouble("pro_price")));
                 txtCount.setText(String.valueOf(rs.getInt("pro_count")));

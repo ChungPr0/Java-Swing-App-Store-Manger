@@ -17,6 +17,7 @@ import static JDBCUtils.Style.*;
 public class InvoiceStatsPanel extends JPanel {
     private final JTable table;
     private final DefaultTableModel tableModel;
+    JButton btnExport;
 
     public InvoiceStatsPanel() {
         this.setLayout(new BorderLayout());
@@ -40,7 +41,10 @@ public class InvoiceStatsPanel extends JPanel {
         table.getColumnModel().getColumn(1).setMaxWidth(60);
         table.getColumnModel().getColumn(1).setMinWidth(60);
 
-        JPanel pTable = createTableWithLabel(table, "TOP HÓA ĐƠN TỔNG TIỀN NHIỀU NHẤT 7 NGÀY QUA");
+        btnExport = createSmallButton("Xuất Excel", Color.decode("#1D6F42"));
+        btnExport.setPreferredSize(new Dimension(100, 30));
+
+        JPanel pTable = createTableWithLabel(table, "TOP HÓA ĐƠN TỔNG TIỀN NHIỀU NHẤT 7 NGÀY QUA", btnExport);
 
         this.add(pTable, BorderLayout.CENTER);
 
@@ -108,5 +112,8 @@ public class InvoiceStatsPanel extends JPanel {
                 }
             }
         });
+
+        // Khi bấm nút xuất Excel
+        btnExport.addActionListener(_ -> JDBCUtils.Export.exportToExcel(table, "Danh_sach_top_hoa_don_7_ngay_gan_nhat"));
     }
 }

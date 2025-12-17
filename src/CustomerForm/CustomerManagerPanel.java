@@ -149,6 +149,9 @@ public class CustomerManagerPanel extends JPanel {
             ResultSet rs = ps.executeQuery();
 
             if (rs.next()) {
+                // Gán lại id để đỡ lỗi
+                selectedCusID = rs.getInt("cus_id");
+
                 txtName.setText(rs.getString("cus_name"));
                 txtPhone.setText(rs.getString("cus_phone"));
                 txtAddress.setText(rs.getString("cus_address"));

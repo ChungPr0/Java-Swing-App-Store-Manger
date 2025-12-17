@@ -326,21 +326,25 @@ public class InvoiceManagerPanel extends JPanel {
 
             // 2. Tải chi tiết sản phẩm (Details)
             detailModel.setRowCount(0);
-            String sqlDetail = "SELECT p.pro_ID, p.pro_name, p.pro_price, d.ind_count " +
+            String sqlDetail = "SELECT p.pro_ID, p.pro_name, d.unit_price, p.pro_price, d.ind_count " +
                     "FROM Invoice_details d JOIN Products p ON d.pro_ID = p.pro_ID WHERE d.inv_ID = ?";
             PreparedStatement psDetail = con.prepareStatement(sqlDetail);
             psDetail.setInt(1, invID);
             ResultSet rsDetail = psDetail.executeQuery();
 
             while (rsDetail.next()) {
-                double price = rsDetail.getDouble("pro_price");
+                // Ưu tiên lấy unit_price trong Invoice_details. Nếu = 0 (hóa đơn cũ) thì lấy pro_price
+                double historicalPrice = rsDetail.getDouble("unit_price");
+                double currentPrice = rsDetail.getDouble("pro_price");
+                double finalPrice = (historicalPrice > 0) ? historicalPrice : currentPrice;
+
                 int count = rsDetail.getInt("ind_count");
                 detailModel.addRow(new Object[]{
                         rsDetail.getInt("pro_ID"),
                         rsDetail.getString("pro_name"),
-                        df.format(price),
+                        df.format(finalPrice), // Hiển thị giá lịch sử
                         count,
-                        df.format(price * count)
+                        df.format(finalPrice * count)
                 });
             }
             calculateUITotal();
@@ -596,7 +600,7 @@ public class InvoiceManagerPanel extends JPanel {
             if (rsKeys.next()) newInvID = rsKeys.getInt(1);
 
             // B2 & B3: Insert Details & Trừ kho
-            String sqlDetail = "INSERT INTO Invoice_details (inv_ID, pro_ID, ind_count) VALUES (?, ?, ?)";
+            String sqlDetail = "INSERT INTO Invoice_details (inv_ID, pro_ID, ind_count, unit_price) VALUES (?, ?, ?, ?)";
             String sqlStock = "UPDATE Products SET pro_count = pro_count - ? WHERE pro_ID = ?";
             PreparedStatement psDetail = con.prepareStatement(sqlDetail);
             PreparedStatement psStock = con.prepareStatement(sqlStock);
@@ -609,8 +613,14 @@ public class InvoiceManagerPanel extends JPanel {
                 // Kiểm tra lại tồn kho lần cuối trước khi chốt
                 if (currentStock < qty) throw new Exception("Sản phẩm ID " + proID + " không đủ hàng.");
 
+                // Lấy giá hiện tại của sản phẩm để lưu snapshot
+                double currentPrice = getProductPrice(proID);
+
                 // Thêm chi tiết
-                psDetail.setInt(1, newInvID); psDetail.setInt(2, proID); psDetail.setInt(3, qty);
+                psDetail.setInt(1, newInvID);
+                psDetail.setInt(2, proID);
+                psDetail.setInt(3, qty);
+                psDetail.setDouble(4, currentPrice); // Lưu giá lúc bán
                 psDetail.executeUpdate();
 
                 // Trừ kho
@@ -676,7 +686,7 @@ public class InvoiceManagerPanel extends JPanel {
             psDel.executeUpdate();
 
             // B3 & B4: Insert chi tiết mới & Trừ kho lại
-            String sqlIns = "INSERT INTO Invoice_details (inv_ID, pro_ID, ind_count) VALUES (?, ?, ?)";
+            String sqlIns = "INSERT INTO Invoice_details (inv_ID, pro_ID, ind_count, unit_price) VALUES (?, ?, ?, ?)";
             String sqlDed = "UPDATE Products SET pro_count = pro_count - ? WHERE pro_ID = ?";
             PreparedStatement psIns = con.prepareStatement(sqlIns);
             PreparedStatement psDed = con.prepareStatement(sqlDed);
@@ -684,11 +694,17 @@ public class InvoiceManagerPanel extends JPanel {
             for (int i = 0; i < detailModel.getRowCount(); i++) {
                 int proID = Integer.parseInt(detailModel.getValueAt(i, 0).toString());
                 int qty = Integer.parseInt(detailModel.getValueAt(i, 3).toString());
-                int currentStock = getProductStock(con, proID);
 
+                // Lấy giá đang hiển thị trên Table (đây là giá lịch sử hoặc giá đã điều chỉnh)
+                double priceOnTable = parseMoney(detailModel.getValueAt(i, 2).toString());
+
+                int currentStock = getProductStock(con, proID);
                 if (currentStock < qty) throw new Exception("Sản phẩm ID " + proID + " không đủ hàng.");
 
-                psIns.setInt(1, selectedInvID); psIns.setInt(2, proID); psIns.setInt(3, qty);
+                psIns.setInt(1, selectedInvID);
+                psIns.setInt(2, proID);
+                psIns.setInt(3, qty);
+                psIns.setDouble(4, priceOnTable); // Lưu lại giá này vào DB
                 psIns.executeUpdate();
 
                 psDed.setInt(1, qty); psDed.setInt(2, proID);

@@ -28,7 +28,7 @@ public class AddInvoiceDetailDialog extends JDialog {
 
     // Map để lưu trữ cặp: [ID Sản Phẩm] -> [Số Lượng Tồn]
     // Giúp tra cứu nhanh mà không cần gọi lại DB hay cắt chuỗi
-    private Map<Integer, Integer> productStockMap = new HashMap<>();
+    private final Map<Integer, Integer> productStockMap = new HashMap<>();
 
     public AddInvoiceDetailDialog(Frame parent) {
         super(parent, true);

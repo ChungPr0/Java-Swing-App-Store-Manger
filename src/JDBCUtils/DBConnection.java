@@ -1,6 +1,5 @@
 package JDBCUtils;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -9,6 +8,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import static JDBCUtils.Style.showError;
 
 /**
  * Lớp tiện ích quản lý kết nối cơ sở dữ liệu (Database Connection).
@@ -33,7 +34,7 @@ public class DBConnection {
      */
     static {
         Properties prop = new Properties();
-        InputStream input = null;
+        InputStream input;
 
         try {
             // --- BƯỚC 1: Ưu tiên tìm file cấu hình bên ngoài (External) ---
@@ -72,7 +73,7 @@ public class DBConnection {
 
         } catch (IOException ex) {
             // Nếu có lỗi đọc file (ổ cứng hỏng, không có quyền đọc...) -> Báo lỗi
-            JOptionPane.showMessageDialog(null, "Lỗi đọc file cấu hình: " + ex.getMessage());
+            showError(null, "Lỗi đọc file cấu hình: " + ex.getMessage());
         }
     }
 

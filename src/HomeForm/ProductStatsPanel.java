@@ -47,7 +47,7 @@ public class ProductStatsPanel extends JPanel {
         tableProduct.getColumnModel().getColumn(0).setMaxWidth(60);
         tableProduct.getColumnModel().getColumn(2).setMaxWidth(70);
         tableProduct.getColumnModel().getColumn(3).setMaxWidth(70);
-        pTableWrapper = createTableWithLabel(tableProduct, "TOP SẢN PHẨM BÁN CHẠY (7 NGÀY QUA)");
+        pTableWrapper = createTableWithLabel(tableProduct, "TOP SẢN PHẨM BÁN CHẠY 7 NGÀY QUA");
 
         this.add(pChartWrapper, BorderLayout.WEST);
         this.add(pTableWrapper, BorderLayout.CENTER);
@@ -66,7 +66,9 @@ public class ProductStatsPanel extends JPanel {
 
         if (categoryName.equals("ALL")) {
             setTableTitle("TOP SẢN PHẨM BÁN CHẠY 7 NGÀY QUA");
-            sql = "SELECT p.pro_ID, p.pro_name, p.pro_count, SUM(d.ind_count) as qty, SUM(d.ind_count * p.pro_price) as total " +
+            sql = "SELECT p.pro_ID, p.pro_name, p.pro_count, " +
+                    "SUM(d.ind_count) as qty, " +
+                    "SUM(d.ind_count * d.unit_price) as total " +
                     "FROM Invoice_details d " +
                     "JOIN Products p ON d.pro_ID = p.pro_ID " +
                     "JOIN Invoices i ON d.inv_ID = i.inv_ID " +
@@ -75,7 +77,9 @@ public class ProductStatsPanel extends JPanel {
                     "ORDER BY qty DESC LIMIT 20";
         } else {
             setTableTitle("CHI TIẾT: " + categoryName);
-            sql = "SELECT p.pro_ID, p.pro_name, p.pro_count, SUM(d.ind_count) as qty, SUM(d.ind_count * p.pro_price) as total " +
+            sql = "SELECT p.pro_ID, p.pro_name, p.pro_count, " +
+                    "SUM(d.ind_count) as qty, " +
+                    "SUM(d.ind_count * d.unit_price) as total " +
                     "FROM Invoice_details d " +
                     "JOIN Products p ON d.pro_ID = p.pro_ID " +
                     "JOIN ProductTypes t ON p.type_ID = t.type_ID " +
@@ -150,10 +154,19 @@ public class ProductStatsPanel extends JPanel {
     private void setTableTitle(String text) {
         try {
             BorderLayout layout = (BorderLayout) pTableWrapper.getLayout();
-            JLabel lbl = (JLabel) layout.getLayoutComponent(BorderLayout.NORTH);
-            if (lbl != null) lbl.setText(text.toUpperCase());
+            Component headerComp = layout.getLayoutComponent(BorderLayout.NORTH);
+
+            if (headerComp instanceof JPanel headerPanel) {
+                BorderLayout headerLayout = (BorderLayout) headerPanel.getLayout();
+
+                JLabel lbl = (JLabel) headerLayout.getLayoutComponent(BorderLayout.CENTER);
+                if (lbl != null) lbl.setText(text.toUpperCase());
+
+            } else if (headerComp instanceof JLabel) {
+                ((JLabel) headerComp).setText(text.toUpperCase());
+            }
         } catch (Exception e) {
-            showError(this, "Lỗi: " + e.getMessage());
+             showError(this, "Lỗi set title: " + e.getMessage());
         }
     }
 }

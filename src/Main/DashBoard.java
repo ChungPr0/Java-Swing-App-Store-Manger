@@ -51,15 +51,13 @@ public class DashBoard extends JFrame {
     private void initUI() {
         JPanel mainContainer = new JPanel(new BorderLayout());
 
-        // A. MENU BAR (Thanh menu trên cùng)
-        JPanel menuPanel = new JPanel(new BorderLayout());
+        // A. MENU BAR (Sửa lại toàn bộ đoạn này)
+        JPanel menuPanel = new JPanel();
+        menuPanel.setLayout(new BoxLayout(menuPanel, BoxLayout.X_AXIS)); // Xếp hàng ngang
         menuPanel.setBackground(Color.decode("#2c3e50"));
         menuPanel.setPreferredSize(new Dimension(0, 50));
 
-        // A.1 Menu Trái (Các nút chuyển Tab)
-        JPanel leftMenuPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        leftMenuPanel.setBackground(Color.decode("#2c3e50"));
-
+        // 1. Tạo và thêm các nút bên Trái
         btnHome = createMenuButton("TRANG CHỦ");
         btnStaff = createMenuButton("NHÂN VIÊN");
         btnSupplier = createMenuButton("NHÀ CUNG CẤP");
@@ -67,23 +65,20 @@ public class DashBoard extends JFrame {
         btnProduct = createMenuButton("SẢN PHẨM");
         btnInvoice = createMenuButton("HÓA ĐƠN");
 
-        leftMenuPanel.add(btnHome);
-        leftMenuPanel.add(btnStaff);
-        leftMenuPanel.add(btnSupplier);
-        leftMenuPanel.add(btnCustomer);
-        leftMenuPanel.add(btnProduct);
-        leftMenuPanel.add(btnInvoice);
+        menuPanel.add(btnHome);
+        menuPanel.add(btnStaff);
+        menuPanel.add(btnSupplier);
+        menuPanel.add(btnCustomer);
+        menuPanel.add(btnProduct);
+        menuPanel.add(btnInvoice);
 
-        // A.2 Menu Phải (Nút Tài khoản)
-        JPanel rightMenuPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-        rightMenuPanel.setBackground(Color.decode("#2c3e50"));
+        // Thêm "Lò xo" ở giữa (Quan trọng: Đẩy nút Tài khoản sang phải)
+        menuPanel.add(Box.createHorizontalGlue());
 
         JButton btnInfo = createMenuButton("TÀI KHOẢN");
-        setupUserPopup(btnInfo); // Cài đặt logic Popup cho nút này
-        rightMenuPanel.add(btnInfo);
+        setupUserPopup(btnInfo);
 
-        menuPanel.add(leftMenuPanel, BorderLayout.WEST);
-        menuPanel.add(rightMenuPanel, BorderLayout.EAST);
+        menuPanel.add(btnInfo);
 
         // B. CONTENT AREA (Khu vực nội dung chính)
         cardLayout = new CardLayout();
@@ -173,12 +168,14 @@ public class DashBoard extends JFrame {
         btn.setForeground(Color.WHITE);
         btn.setBackground(Color.decode("#2c3e50"));
 
+        btn.setPreferredSize(new Dimension(130, 50));
+        btn.setMaximumSize(new Dimension(130, 51));
+        btn.setAlignmentX(Component.CENTER_ALIGNMENT);
+
         btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
+        btn.setFocusable(false);
         btn.setContentAreaFilled(true);
         btn.setOpaque(true);
-
-        btn.setPreferredSize(new Dimension(130, 50));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         btn.addMouseListener(new MouseAdapter() {
