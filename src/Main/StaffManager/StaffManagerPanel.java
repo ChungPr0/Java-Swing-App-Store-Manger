@@ -1,7 +1,7 @@
 package Main.StaffManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
+import Utils.ComboItem;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,12 +10,13 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.sql.*;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class StaffManagerPanel extends JPanel {
     // --- 1. KHAI BÁO BIẾN GIAO DIỆN (UI COMPONENTS) ---
     private JList<ComboItem> listStaff;
-    private JTextField txtSearch, txtName, txtSalary, txtPhone, txtAddress, txtUsername, txtPassword;
+    private JTextField txtSearch, txtName, txtSalary, txtPhone, txtAddress, txtUsername;
+    private JPasswordField txtPassword; // Sửa thành private để chuẩn encapsulation
     private JCheckBox chkIsAdmin;
     private JComboBox<String> cbDay, cbMonth, cbYear;
     private JComboBox<String> cbStartDay, cbStartMonth, cbStartYear;
@@ -69,7 +70,7 @@ public class StaffManagerPanel extends JPanel {
 
         txtName = new JTextField();
         rightPanel.add(createTextFieldWithLabel(txtName, "Tên Nhân Viên:"));
-        rightPanel.add(Box.createVerticalStrut(15));
+        rightPanel.add(Box.createVerticalStrut(16));
 
         // Khu vực Ngày sinh và Vai trò
         cbDay = new JComboBox<>();
@@ -87,15 +88,15 @@ public class StaffManagerPanel extends JPanel {
         rowDateAndRole.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
         rightPanel.add(rowDateAndRole);
-        rightPanel.add(Box.createVerticalStrut(15));
+        rightPanel.add(Box.createVerticalStrut(16));
 
         txtPhone = new JTextField();
         rightPanel.add(createTextFieldWithLabel(txtPhone, "Số điện thoại:"));
-        rightPanel.add(Box.createVerticalStrut(15));
+        rightPanel.add(Box.createVerticalStrut(16));
 
         txtAddress = new JTextField();
         rightPanel.add(createTextFieldWithLabel(txtAddress, "Địa chỉ:"));
-        rightPanel.add(Box.createVerticalStrut(15));
+        rightPanel.add(Box.createVerticalStrut(16));
 
         // Khu vực Lương và Ngày vào làm
         JPanel rowSalaryAndStart = new JPanel(new GridLayout(1, 2, 15, 0));
@@ -112,15 +113,16 @@ public class StaffManagerPanel extends JPanel {
         rowSalaryAndStart.add(pStartDate);
 
         rightPanel.add(rowSalaryAndStart);
-        rightPanel.add(Box.createVerticalStrut(15));
+        rightPanel.add(Box.createVerticalStrut(16));
 
         txtUsername = new JTextField();
         rightPanel.add(createTextFieldWithLabel(txtUsername, "Tài khoản đăng nhập (Có thể để trống):"));
-        rightPanel.add(Box.createVerticalStrut(15));
+        rightPanel.add(Box.createVerticalStrut(16));
 
-        txtPassword = new JTextField();
-        rightPanel.add(createTextFieldWithLabel(txtPassword, "Mật khẩu (Có thể để trống):"));
-        rightPanel.add(Box.createVerticalStrut(15));
+        txtPassword = new JPasswordField();
+        JCheckBox chkShowPass = new JCheckBox();
+        rightPanel.add(createPasswordFieldWithLabel(txtPassword, "Mật khẩu (Có thể để trống):", chkShowPass));
+        rightPanel.add(Box.createVerticalStrut(16));
 
         // C. KHU VỰC BUTTON
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -139,15 +141,14 @@ public class StaffManagerPanel extends JPanel {
 
         rightPanel.add(buttonPanel);
 
-        // Tạo Scroll cho Panel phải
-        JScrollPane rightScrollPane = new JScrollPane(rightPanel);
-        rightScrollPane.setBorder(null);
-        rightScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        rightScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        rightScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        // Thêm Scroll cho Panel phải
+        JScrollPane rightScroll = new JScrollPane(rightPanel);
+        rightScroll.setBorder(null);
+        rightScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        rightScroll.getVerticalScrollBar().setUnitIncrement(16);
 
         this.add(leftPanel, BorderLayout.WEST);
-        this.add(rightScrollPane, BorderLayout.CENTER);
+        this.add(rightScroll, BorderLayout.CENTER);
 
         enableForm(false);
     }
@@ -312,6 +313,7 @@ public class StaffManagerPanel extends JPanel {
 
         // Nút Lưu Thay Đổi: Lưu xong giữ nguyên lựa chọn
         btnSave.addActionListener(e -> {
+            // 1. Validate thông tin cơ bản
             if (txtName.getText().trim().isEmpty() ||
                     txtPhone.getText().trim().isEmpty() ||
                     txtAddress.getText().trim().isEmpty() ||
@@ -321,15 +323,19 @@ public class StaffManagerPanel extends JPanel {
                 return;
             }
 
-            if (txtUsername.getText().trim().isEmpty() && !txtPassword.getText().trim().isEmpty()) {
-                showError(this, "Vui lòng nhập tài khoản nếu có mật khẩu!");
+            // 2. Lấy dữ liệu tài khoản và mật khẩu
+            String user = txtUsername.getText().trim();
+            // Lấy password từ JPasswordField và chuyển sang String để xử lý
+            String pass = new String(txtPassword.getPassword()).trim();
+
+            // Logic: Phải nhập cả user và pass HOẶC để trống cả hai
+            if ((!user.isEmpty() && pass.isEmpty()) || (user.isEmpty() && !pass.isEmpty())) {
+                showError(this, "Vui lòng nhập đầy đủ cả Tài khoản và Mật khẩu (hoặc để trống cả hai)!");
                 return;
             }
 
             try (Connection con = DBConnection.getConnection()) {
-                String user = txtUsername.getText().trim();
-                String pass = txtPassword.getText().trim();
-
+                // 3. Kiểm tra trùng username (nếu có nhập user)
                 if (!user.isEmpty()) {
                     String checkSql = "SELECT COUNT(*) FROM Staffs WHERE sta_username = ? AND sta_id != ?";
                     PreparedStatement psCheck = con.prepareStatement(checkSql);

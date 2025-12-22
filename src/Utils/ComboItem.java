@@ -1,4 +1,4 @@
-package JDBCUtils;
+package Utils;
 
 /**
  * Lớp đối tượng hỗ trợ cho JComboBox và JList.

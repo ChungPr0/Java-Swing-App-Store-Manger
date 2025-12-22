@@ -1,7 +1,7 @@
 package Main.HomeManager;
 
 import Main.HomeManager.Charts.PieChartPanel;
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 import Main.DashBoard;
 
 import javax.swing.*;
@@ -14,8 +14,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import static JDBCUtils.Style.createTableWithLabel;
-import static JDBCUtils.Style.showError;
+import static Utils.Style.createTableWithLabel;
+import static Utils.Style.showError;
 
 public class ProductStatsPanel extends JPanel {
     private final PieChartPanel chartPanel;

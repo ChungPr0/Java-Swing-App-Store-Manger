@@ -1,6 +1,6 @@
 package Main.ProductManager;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLIntegrityConstraintViolationException;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 /**
  * Dialog dùng chung cho 2 chức năng:

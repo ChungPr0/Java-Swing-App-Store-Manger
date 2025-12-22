@@ -1,6 +1,6 @@
 package Main.CustomerManager;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class AddCustomerDialog extends JDialog {
 

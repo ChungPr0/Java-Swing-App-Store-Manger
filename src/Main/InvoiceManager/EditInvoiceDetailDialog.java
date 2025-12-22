@@ -4,7 +4,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 /**
  * Dialog dùng để chỉnh sửa số lượng sản phẩm trong hóa đơn.

@@ -1,7 +1,7 @@
 package Main.ProductManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
+import Utils.ComboItem;
+import Utils.DBConnection;
 import Main.SupplierManager.AddSupplierDialog;
 
 import javax.swing.*;
@@ -14,7 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class AddProductDialog extends JDialog {
 

@@ -1,4 +1,4 @@
-package JDBCUtils;
+package Utils;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -329,27 +329,53 @@ public class Style {
     }
 
     /**
-     * Tạo Panel chứa PasswordField kèm nhãn tiêu đề.
+     * Tạo Panel chứa PasswordField kèm nhãn tiêu đề và Checkbox ẩn/hiện mật khẩu.
      *
      * @param pf JPasswordField cần bọc.
      * @param labelText Tiêu đề nhãn.
-     * @return JPanel chứa Label và PasswordField.
+     * @param chkShowPass JCheckBox để bật tắt xem mật khẩu (có thể null nếu không cần).
+     * @return JPanel chứa Label, PasswordField và Checkbox bên dưới.
      */
-    public static JPanel createPasswordFieldWithLabel(JPasswordField pf, String labelText) {
+    public static JPanel createPasswordFieldWithLabel(JPasswordField pf, String labelText, JCheckBox chkShowPass) {
         JPanel p = new JPanel(new BorderLayout(5, 5));
         p.setBackground(Color.WHITE);
-        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
+
+        // Tăng chiều cao tối đa lên 90 để chứa đủ cả checkbox (nếu có)
+        p.setMaximumSize(new Dimension(Integer.MAX_VALUE, 90));
+
         p.add(createTitleLabel(labelText), BorderLayout.NORTH);
 
         pf.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         pf.setPreferredSize(new Dimension(0, 35));
-        pf.setEchoChar('•');
+        pf.setEchoChar('•'); // Mặc định là ẩn
         pf.setBorder(new javax.swing.border.CompoundBorder(
                 new javax.swing.border.LineBorder(Color.decode("#bdc3c7"), 1),
                 new javax.swing.border.EmptyBorder(5, 10, 5, 10)
         ));
         installFocusAnimation(pf);
         p.add(pf, BorderLayout.CENTER);
+
+        // Xử lý Checkbox nếu được truyền vào
+
+        if (chkShowPass != null) {
+            chkShowPass.setBackground(Color.WHITE);
+            chkShowPass.setFont(new Font("Segoe UI", Font.ITALIC, 12)); // Font nhỏ, nghiêng
+            chkShowPass.setText("Hiển thị mật khẩu");
+            chkShowPass.setForeground(Color.GRAY);
+            chkShowPass.setFocusable(false); // Bỏ viền focus khi click cho đẹp
+
+            // Sự kiện: Click vào checkbox để ẩn/hiện
+            chkShowPass.addActionListener(e -> {
+                if (chkShowPass.isSelected()) {
+                    pf.setEchoChar((char) 0); // Hiện mật khẩu
+                } else {
+                    pf.setEchoChar('•'); // Ẩn mật khẩu
+                }
+            });
+
+            p.add(chkShowPass, BorderLayout.SOUTH);
+        }
+
         return p;
     }
 

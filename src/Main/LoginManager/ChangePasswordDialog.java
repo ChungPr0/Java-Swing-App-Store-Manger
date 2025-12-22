@@ -1,7 +1,7 @@
 package Main.LoginManager;
 
-import JDBCUtils.DBConnection;
-import JDBCUtils.Session;
+import Utils.DBConnection;
+import Utils.Session;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,7 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class ChangePasswordDialog extends JDialog {
 
@@ -20,7 +20,7 @@ public class ChangePasswordDialog extends JDialog {
     public ChangePasswordDialog(JFrame parent) {
         // Cấu hình Dialog (Modal = true để chặn tương tác cửa sổ cha)
         super(parent, "Đổi Mật Khẩu", true);
-        setSize(400, 400);
+        setSize(400, 500);
         setLocationRelativeTo(parent); // Căn giữa màn hình cha
 
         initUI(); // Khởi tạo giao diện
@@ -42,17 +42,20 @@ public class ChangePasswordDialog extends JDialog {
 
         // B. Các ô nhập mật khẩu
         txtOldPass = new JPasswordField();
-        JPanel pOld = createPasswordFieldWithLabel(txtOldPass, "Mật khẩu hiện tại:");
+        JCheckBox chkShowOldPass = new JCheckBox();
+        JPanel pOld = createPasswordFieldWithLabel(txtOldPass, "Mật khẩu hiện tại:", chkShowOldPass);
         mainPanel.add(pOld);
         mainPanel.add(Box.createVerticalStrut(20));
 
         txtNewPass = new JPasswordField();
-        JPanel pNew = createPasswordFieldWithLabel(txtNewPass, "Mật khẩu mới:");
+        JCheckBox chkShowNewPass = new JCheckBox();
+        JPanel pNew = createPasswordFieldWithLabel(txtNewPass, "Mật khẩu mới:", chkShowNewPass);
         mainPanel.add(pNew);
         mainPanel.add(Box.createVerticalStrut(20));
 
         txtConfirmPass = new JPasswordField();
-        JPanel pConfirm = createPasswordFieldWithLabel(txtConfirmPass, "Xác nhận mật khẩu mới:");
+        JCheckBox chkShowConfirmPass = new JCheckBox();
+        JPanel pConfirm = createPasswordFieldWithLabel(txtConfirmPass, "Xác nhận mật khẩu mới:", chkShowConfirmPass);
         mainPanel.add(pConfirm);
         mainPanel.add(Box.createVerticalStrut(30));
 

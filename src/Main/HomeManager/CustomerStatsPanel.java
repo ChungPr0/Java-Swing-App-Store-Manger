@@ -1,6 +1,6 @@
 package Main.HomeManager;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 import Main.DashBoard;
 
 import javax.swing.*;
@@ -11,8 +11,8 @@ import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-import static JDBCUtils.Export.exportToExcel;
-import static JDBCUtils.Style.*;
+import static Utils.Export.exportToExcel;
+import static Utils.Style.*;
 
 public class CustomerStatsPanel extends JPanel {
     private final JTable table;
@@ -41,7 +41,7 @@ public class CustomerStatsPanel extends JPanel {
         table.getColumnModel().getColumn(1).setMinWidth(60);
 
         JPanel pTable;
-        if (JDBCUtils.Session.isAdmin()) {
+        if (Utils.Session.isAdmin()) {
             JButton btnExport = createSmallButton("Xuất Excel", Color.decode("#1D6F42"));
             btnExport.setPreferredSize(new Dimension(100, 35));
             btnExport.addActionListener(e -> exportToExcel(table, "Danh_sach_top_khach_hang_7_ngay_gan_nhat"));

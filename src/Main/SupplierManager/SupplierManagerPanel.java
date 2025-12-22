@@ -1,22 +1,21 @@
 package Main.SupplierManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
-// Import DashBoard để gọi hàm chuyển tab
+import Utils.ComboItem;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableModel; // Import TableModel
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter; // Import MouseAdapter
-import java.awt.event.MouseEvent;   // Import MouseEvent
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
-import java.text.DecimalFormat;     // Import DecimalFormat
+import java.text.DecimalFormat;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class SupplierManagerPanel extends JPanel {
     // --- KHAI BÁO BIẾN GIAO DIỆN ---

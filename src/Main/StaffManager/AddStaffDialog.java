@@ -1,6 +1,6 @@
 package Main.StaffManager;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,12 +10,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class AddStaffDialog extends JDialog {
 
     // --- KHAI BÁO BIẾN GIAO DIỆN ---
-    private JTextField txtName, txtPhone, txtAddress, txtSalary, txtUsername, txtPassword;
+    private JTextField txtName, txtPhone, txtAddress, txtSalary, txtUsername;
+    private JPasswordField txtPassword; // Sửa thành JPasswordField
     private JCheckBox chkIsAdmin;
     private JComboBox<String> cbDay, cbMonth, cbYear;
     private JComboBox<String> cbStartDay, cbStartMonth, cbStartYear;
@@ -23,7 +24,7 @@ public class AddStaffDialog extends JDialog {
 
     // --- BIẾN TRẠNG THÁI ---
     private boolean isAdded = false;
-    private int newStaffID = -1; // Biến lưu ID nhân viên vừa thêm
+    private int newStaffID = -1;
 
     public AddStaffDialog(Frame parent) {
         super(parent, true); // Modal = true
@@ -86,9 +87,11 @@ public class AddStaffDialog extends JDialog {
         mainPanel.add(createTextFieldWithLabel(txtUsername, "Tài khoản đăng nhập (Có thể để trống):"));
         mainPanel.add(Box.createVerticalStrut(16));
 
-        txtPassword = new JTextField();
-        mainPanel.add(createTextFieldWithLabel(txtPassword, "Mật khẩu (Có thể để trống):"));
-        mainPanel.add(Box.createVerticalStrut(16));
+        // Dùng JPasswordField và thêm checkbox hiển thị
+        txtPassword = new JPasswordField();
+        JCheckBox chkShowPass = new JCheckBox(); // Checkbox để bật/tắt xem mật khẩu
+        mainPanel.add(createPasswordFieldWithLabel(txtPassword, "Mật khẩu (Có thể để trống):", chkShowPass));
+        mainPanel.add(Box.createVerticalStrut(12));
 
         // Checkbox Vai trò
         chkIsAdmin = new JCheckBox();
@@ -129,7 +132,7 @@ public class AddStaffDialog extends JDialog {
 
         // Sự kiện nút Lưu
         btnSave.addActionListener(e -> {
-            // Validate
+            // 1. Validate thông tin cơ bản
             if (txtName.getText().trim().isEmpty() ||
                     txtPhone.getText().trim().isEmpty() ||
                     txtAddress.getText().trim().isEmpty() ||
@@ -138,8 +141,13 @@ public class AddStaffDialog extends JDialog {
                 return;
             }
 
-            if (txtUsername.getText().trim().isEmpty() && !txtPassword.getText().trim().isEmpty()) {
-                showError(this, "Vui lòng nhập tài khoản nếu có mật khẩu!");
+            // 2. Lấy dữ liệu tài khoản và mật khẩu
+            String user = txtUsername.getText().trim();
+            String pass = new String(txtPassword.getPassword()).trim(); // Lấy password chuẩn
+
+            // Logic: Phải nhập cả user và pass HOẶC để trống cả hai
+            if ((!user.isEmpty() && pass.isEmpty()) || (user.isEmpty() && !pass.isEmpty())) {
+                showError(this, "Vui lòng nhập đầy đủ cả Tài khoản và Mật khẩu (hoặc để trống cả hai)!");
                 return;
             }
 
@@ -152,7 +160,6 @@ public class AddStaffDialog extends JDialog {
 
                 String sql = "INSERT INTO Staffs (sta_name, sta_date_of_birth, sta_phone, sta_address, sta_salary, sta_start_date, sta_username, sta_password, sta_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-                // Thêm RETURN_GENERATED_KEYS
                 PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 
                 ps.setString(1, txtName.getText().trim());
@@ -161,9 +168,6 @@ public class AddStaffDialog extends JDialog {
                 ps.setString(4, txtAddress.getText().trim());
                 ps.setDouble(5, salary);
                 ps.setString(6, strStartDate);
-
-                String user = txtUsername.getText().trim();
-                String pass = txtPassword.getText().trim();
 
                 if (user.isEmpty()) ps.setNull(7, java.sql.Types.VARCHAR);
                 else ps.setString(7, user);
@@ -175,7 +179,6 @@ public class AddStaffDialog extends JDialog {
 
                 int rows = ps.executeUpdate();
                 if (rows > 0) {
-                    // Lấy ID vừa sinh ra
                     ResultSet rs = ps.getGeneratedKeys();
                     if (rs.next()) {
                         this.newStaffID = rs.getInt(1);
@@ -220,7 +223,6 @@ public class AddStaffDialog extends JDialog {
         return isAdded;
     }
 
-    // Getter lấy ID nhân viên mới
     public int getNewStaffID() {
         return newStaffID;
     }

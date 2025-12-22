@@ -1,7 +1,7 @@
 package Main.CustomerManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
+import Utils.ComboItem;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,7 +10,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.sql.*;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class CustomerManagerPanel extends JPanel {
 
@@ -93,8 +93,14 @@ public class CustomerManagerPanel extends JPanel {
 
         rightPanel.add(buttonPanel);
 
+        // Thêm Scroll cho Panel phải
+        JScrollPane rightScroll = new JScrollPane(rightPanel);
+        rightScroll.setBorder(null);
+        rightScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        rightScroll.getVerticalScrollBar().setUnitIncrement(16);
+
         this.add(leftPanel, BorderLayout.WEST);
-        this.add(rightPanel, BorderLayout.CENTER);
+        this.add(rightScroll, BorderLayout.CENTER);
 
         enableForm(false); // Mặc định khóa form
     }

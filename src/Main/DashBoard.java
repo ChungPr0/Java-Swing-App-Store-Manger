@@ -8,7 +8,7 @@ import Main.ProductManager.ProductManagerPanel;
 import Main.InvoiceManager.InvoiceManagerPanel;
 import Main.LoginManager.LoginForm;
 import Main.LoginManager.ChangePasswordDialog;
-import JDBCUtils.Session;
+import Utils.Session;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -17,7 +17,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class DashBoard extends JFrame {
 
@@ -106,7 +106,7 @@ public class DashBoard extends JFrame {
         this.setContentPane(mainContainer);
 
         // C. PHÂN QUYỀN (Ẩn nút nếu không phải Admin)
-        if (!JDBCUtils.Session.isAdmin()) {
+        if (!Utils.Session.isAdmin()) {
             btnStaff.setVisible(false);
             btnSupplier.setVisible(false);
         }
@@ -249,12 +249,12 @@ public class DashBoard extends JFrame {
         lblTitle.setForeground(Color.decode("#2c3e50"));
         lblTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblUser = new JLabel("Tài khoản: " + JDBCUtils.Session.loggedInStaffName);
+        JLabel lblUser = new JLabel("Tài khoản: " + Utils.Session.loggedInStaffName);
         lblUser.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         lblUser.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         String role = "Nhân viên";
-        if (Objects.equals(JDBCUtils.Session.userRole, "Admin")) {
+        if (Objects.equals(Utils.Session.userRole, "Admin")) {
             role = "Quản lý";
         }
 

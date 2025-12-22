@@ -1,4 +1,4 @@
-package JDBCUtils;
+package Utils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,8 +8,8 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
-import static JDBCUtils.Style.showError;
-import static JDBCUtils.Style.showSuccess;
+import static Utils.Style.showError;
+import static Utils.Style.showSuccess;
 
 public class Export {
     public static void exportToExcel(JTable table, String defaultFileName) {

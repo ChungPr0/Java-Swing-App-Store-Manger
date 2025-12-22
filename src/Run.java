@@ -1,11 +1,11 @@
 import Main.LoginManager.LoginForm;
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
 
-import static JDBCUtils.Style.showError;
+import static Utils.Style.showError;
 
 public class Run {
 

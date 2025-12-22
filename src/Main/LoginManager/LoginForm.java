@@ -1,7 +1,7 @@
 package Main.LoginManager;
 
-import JDBCUtils.DBConnection;
-import JDBCUtils.Session;
+import Utils.DBConnection;
+import Utils.Session;
 import Main.DashBoard;
 
 import javax.swing.*;
@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class LoginForm extends JFrame {
     // --- 1. KHAI BÁO BIẾN GIAO DIỆN ---
@@ -21,7 +21,7 @@ public class LoginForm extends JFrame {
     public LoginForm() {
         // Cấu hình cơ bản cho cửa sổ Đăng nhập
         setTitle("Đăng Nhập Hệ Thống");
-        setSize(400, 350);
+        setSize(400, 373);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Căn giữa màn hình
 
@@ -51,9 +51,10 @@ public class LoginForm extends JFrame {
 
         // C. Ô nhập Mật khẩu
         txtPassword = new JPasswordField();
-        JPanel pPass = createPasswordFieldWithLabel(txtPassword, "Mật khẩu:");
+        JCheckBox chkShowPass = new JCheckBox();
+        JPanel pPass = createPasswordFieldWithLabel(txtPassword, "Mật khẩu:", chkShowPass);
         mainPanel.add(pPass);
-        mainPanel.add(Box.createVerticalStrut(30));
+        mainPanel.add(Box.createVerticalStrut(15));
 
         // D. Khu vực nút bấm (Đăng nhập / Thoát)
         JPanel pBtn = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));

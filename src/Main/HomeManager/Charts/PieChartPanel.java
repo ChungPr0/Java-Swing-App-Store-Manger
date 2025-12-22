@@ -1,6 +1,6 @@
 package Main.HomeManager.Charts;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import static JDBCUtils.Style.showError;
+import static Utils.Style.showError;
 
 public class PieChartPanel extends JPanel {
     private final List<Slice> slices = new ArrayList<>();

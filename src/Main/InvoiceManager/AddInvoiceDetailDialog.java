@@ -1,7 +1,7 @@
 package Main.InvoiceManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
+import Utils.ComboItem;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class AddInvoiceDetailDialog extends JDialog {
 

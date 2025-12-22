@@ -1,7 +1,7 @@
 package Main.InvoiceManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
+import Utils.ComboItem;
+import Utils.DBConnection;
 import Main.CustomerManager.AddCustomerDialog;
 
 import javax.swing.*;
@@ -14,7 +14,7 @@ import java.sql.*;
 import java.text.DecimalFormat;
 import java.util.Objects;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 /**
  * Panel quản lý Hóa đơn (Bán hàng).
@@ -164,15 +164,14 @@ public class InvoiceManagerPanel extends JPanel {
 
         rightPanel.add(buttonPanel);
 
-        // Tạo thanh cuộn cho panel phải
-        JScrollPane rightScrollPane = new JScrollPane(rightPanel);
-        rightScrollPane.setBorder(null);
-        rightScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        rightScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        rightScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        // Thêm Scroll cho Panel phải
+        JScrollPane rightScroll = new JScrollPane(rightPanel);
+        rightScroll.setBorder(null);
+        rightScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        rightScroll.getVerticalScrollBar().setUnitIncrement(16);
 
         this.add(leftPanel, BorderLayout.WEST);
-        this.add(rightScrollPane, BorderLayout.CENTER);
+        this.add(rightScroll, BorderLayout.CENTER);
 
         enableForm(false);
     }
@@ -195,8 +194,8 @@ public class InvoiceManagerPanel extends JPanel {
             while (rsSta.next()) cbStaff.addItem(new ComboItem(rsSta.getString("sta_name"), rsSta.getInt("sta_ID")));
 
             // Auto select logged-in staff
-            if (JDBCUtils.Session.isLoggedIn) {
-                int myID = JDBCUtils.Session.loggedInStaffID;
+            if (Utils.Session.isLoggedIn) {
+                int myID = Utils.Session.loggedInStaffID;
                 setSelectedComboItem(cbStaff, myID);
             }
         } catch (Exception e) {
@@ -272,7 +271,7 @@ public class InvoiceManagerPanel extends JPanel {
                 btnSave.setVisible(false);
                 btnPrint.setVisible(true);
 
-                if (JDBCUtils.Session.isAdmin()) {
+                if (Utils.Session.isAdmin()) {
                     enableForm(true);
                     btnSave.setText("Lưu thay đổi");
                     btnDelete.setVisible(true);
@@ -346,7 +345,7 @@ public class InvoiceManagerPanel extends JPanel {
             clearForm();
             enableForm(true);
             setDetailButtonsVisible(true);
-            if (!JDBCUtils.Session.isAdmin()) cbStaff.setEnabled(false);
+            if (!Utils.Session.isAdmin()) cbStaff.setEnabled(false);
             selectedInvID = -1;
             btnSave.setText("Lưu hóa đơn");
             btnSave.setVisible(true);
@@ -726,14 +725,14 @@ public class InvoiceManagerPanel extends JPanel {
     private void enableForm(boolean enable) {
         cbCustomer.setEnabled(enable);
         cbStaff.setEnabled(enable);
-        if (btnQuickAddCustomer != null) btnQuickAddCustomer.setEnabled(enable);
+        btnQuickAddCustomer.setVisible(enable);
         setDetailButtonsVisible(enable);
     }
 
     private void setDetailButtonsVisible(boolean visible) {
-        if (btnAddDetail != null) btnAddDetail.setVisible(visible);
-        if (btnEditDetail != null) btnEditDetail.setVisible(visible);
-        if (btnDelDetail != null) btnDelDetail.setVisible(visible);
+        btnAddDetail.setVisible(visible);
+        btnEditDetail.setVisible(visible);
+        btnDelDetail.setVisible(visible);
     }
 
     private void clearForm() {
@@ -744,8 +743,8 @@ public class InvoiceManagerPanel extends JPanel {
 
         if (cbCustomer.getItemCount() > 0) cbCustomer.setSelectedIndex(0);
         if (cbStaff.getItemCount() > 0) {
-            if (JDBCUtils.Session.isLoggedIn) {
-                setSelectedComboItem(cbStaff, JDBCUtils.Session.loggedInStaffID);
+            if (Utils.Session.isLoggedIn) {
+                setSelectedComboItem(cbStaff, Utils.Session.loggedInStaffID);
             } else cbStaff.setSelectedIndex(0);
         }
 

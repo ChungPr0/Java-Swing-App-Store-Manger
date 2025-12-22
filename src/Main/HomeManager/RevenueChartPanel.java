@@ -1,6 +1,6 @@
 package Main.HomeManager;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import static JDBCUtils.Style.showError;
+import static Utils.Style.showError;
 
 public class RevenueChartPanel extends JPanel {
     private final List<String> dates = new ArrayList<>();

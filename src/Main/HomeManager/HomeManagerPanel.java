@@ -1,6 +1,6 @@
 package Main.HomeManager;
 
-import JDBCUtils.DBConnection;
+import Utils.DBConnection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class HomeManagerPanel extends JPanel {
     private JLabel lblRevenue7Days, lblItemsSold7Days, lblActiveCustomers7Days, lblOrders7Days;
@@ -59,10 +59,10 @@ public class HomeManagerPanel extends JPanel {
         lblActiveCustomers7Days = new JLabel("0");
         lblOrders7Days = new JLabel("0");
 
-        pRevCard = JDBCUtils.Style.createCard("DOANH THU", lblRevenue7Days, new Color(46, 204, 113), "assets/icons/money.png");
-        pItemCard = JDBCUtils.Style.createCard("SẢN PHẨM", lblItemsSold7Days, new Color(52, 152, 219), "assets/icons/box.png");
-        pCusCard = JDBCUtils.Style.createCard("KHÁCH HÀNG", lblActiveCustomers7Days, new Color(243, 156, 18), "assets/icons/customer.png");
-        pOrdCard = JDBCUtils.Style.createCard("ĐƠN HÀNG", lblOrders7Days, new Color(155, 89, 182), "assets/icons/bill.png");
+        pRevCard = Utils.Style.createCard("DOANH THU", lblRevenue7Days, new Color(46, 204, 113), "assets/icons/money.png");
+        pItemCard = Utils.Style.createCard("SẢN PHẨM", lblItemsSold7Days, new Color(52, 152, 219), "assets/icons/box.png");
+        pCusCard = Utils.Style.createCard("KHÁCH HÀNG", lblActiveCustomers7Days, new Color(243, 156, 18), "assets/icons/customer.png");
+        pOrdCard = Utils.Style.createCard("ĐƠN HÀNG", lblOrders7Days, new Color(155, 89, 182), "assets/icons/bill.png");
 
         pRevCard.setCursor(new Cursor(Cursor.HAND_CURSOR));
         pItemCard.setCursor(new Cursor(Cursor.HAND_CURSOR));

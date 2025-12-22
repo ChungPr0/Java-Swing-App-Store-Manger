@@ -1,7 +1,7 @@
 package Main.ProductManager;
 
-import JDBCUtils.ComboItem;
-import JDBCUtils.DBConnection;
+import Utils.ComboItem;
+import Utils.DBConnection;
 import Main.SupplierManager.AddSupplierDialog;
 
 import javax.swing.*;
@@ -15,7 +15,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import static JDBCUtils.Style.*;
+import static Utils.Style.*;
 
 public class ProductManagerPanel extends JPanel {
     // --- 1. KHAI BÁO BIẾN GIAO DIỆN (UI COMPONENTS) ---
@@ -114,10 +114,16 @@ public class ProductManagerPanel extends JPanel {
 
         rightPanel.add(buttonPanel);
 
-        this.add(leftPanel, BorderLayout.WEST);
-        this.add(rightPanel, BorderLayout.CENTER);
+        // Thêm Scroll cho Panel phải
+        JScrollPane rightScroll = new JScrollPane(rightPanel);
+        rightScroll.setBorder(null);
+        rightScroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        rightScroll.getVerticalScrollBar().setUnitIncrement(16);
 
-        if (!JDBCUtils.Session.isAdmin()) {
+        this.add(leftPanel, BorderLayout.WEST);
+        this.add(rightScroll, BorderLayout.CENTER);
+
+        if (!Utils.Session.isAdmin()) {
             btnAdd.setVisible(false);
         }
 
@@ -213,7 +219,7 @@ public class ProductManagerPanel extends JPanel {
 
                 btnSave.setVisible(false);
 
-                if (JDBCUtils.Session.isAdmin()) {
+                if (Utils.Session.isAdmin()) {
                     enableForm(true);
                     btnDelete.setVisible(true);
                     btnAdd.setVisible(true);
@@ -227,7 +233,7 @@ public class ProductManagerPanel extends JPanel {
             showError(this, "Lỗi: " + e.getMessage());
         }
         finally {
-            if (!JDBCUtils.Session.isAdmin()) btnSave.setVisible(false);
+            if (!Utils.Session.isAdmin()) btnSave.setVisible(false);
             isDataLoading = false;
         }
     }
@@ -393,7 +399,7 @@ public class ProductManagerPanel extends JPanel {
     }
 
     private void enableForm(boolean enable) {
-        boolean isAdmin = JDBCUtils.Session.isAdmin();
+        boolean isAdmin = Utils.Session.isAdmin();
         txtName.setEnabled(enable);
         txtPrice.setEnabled(enable);
         txtCount.setEnabled(enable);

@@ -1,4 +1,4 @@
-package JDBCUtils;
+package Utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,7 +9,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import static JDBCUtils.Style.showError;
+import static Utils.Style.showError;
 
 /**
  * Lớp tiện ích quản lý kết nối cơ sở dữ liệu (Database Connection).

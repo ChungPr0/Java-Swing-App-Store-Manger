@@ -1,4 +1,4 @@
-package JDBCUtils;
+package Utils;
 
 /**
  * Lớp quản lý Phiên làm việc (Session) của người dùng hiện tại.
