@@ -18,6 +18,7 @@ public class CustomerStatsPanel extends JPanel {
     private final JTable table;
     private final DefaultTableModel tableModel;
     private final JPanel pTableWrapper;
+    private String currentPeriod = "7 ngày qua"; // Mặc định
 
     public CustomerStatsPanel() {
         this.setLayout(new BorderLayout());
@@ -44,7 +45,10 @@ public class CustomerStatsPanel extends JPanel {
         if (Utils.Session.isAdmin()) {
             JButton btnExport = createSmallButton("Xuất Excel", Color.decode("#1D6F42"));
             btnExport.setPreferredSize(new Dimension(100, 35));
-            btnExport.addActionListener(e -> exportToExcel(table, "Danh_sach_top_khach_hang"));
+            btnExport.addActionListener(e -> {
+                String fileName = "Top_Khách_Hàng_" + currentPeriod.replace(" ", "_");
+                exportToExcel(table, fileName);
+            });
             pTableWrapper = createTableWithLabel(table, "TOP KHÁCH HÀNG", btnExport);
         } else {
             pTableWrapper = createTableWithLabel(table, "TOP KHÁCH HÀNG");
@@ -65,6 +69,7 @@ public class CustomerStatsPanel extends JPanel {
     }
 
     public void loadData(String period) {
+        this.currentPeriod = period; // Cập nhật biến toàn cục
         setTableTitle("TOP KHÁCH HÀNG CHI TIÊU NHIỀU NHẤT (" + period.toUpperCase() + ")");
         tableModel.setRowCount(0);
         String dateFilter = getSqlDateFilter(period);

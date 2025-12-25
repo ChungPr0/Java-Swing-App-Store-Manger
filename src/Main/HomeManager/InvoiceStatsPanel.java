@@ -19,6 +19,7 @@ public class InvoiceStatsPanel extends JPanel {
     private final JTable table;
     private final DefaultTableModel tableModel;
     private final JPanel pTableWrapper;
+    private String currentPeriod = "7 ngày qua"; // Mặc định
 
     public InvoiceStatsPanel() {
         this.setLayout(new BorderLayout());
@@ -45,7 +46,10 @@ public class InvoiceStatsPanel extends JPanel {
         if (Utils.Session.isAdmin()) {
             JButton btnExport = createSmallButton("Xuất Excel", Color.decode("#1D6F42"));
             btnExport.setPreferredSize(new Dimension(100, 35));
-            btnExport.addActionListener(e -> exportToExcel(table, "Danh_sach_top_hoa_don"));
+            btnExport.addActionListener(e -> {
+                String fileName = "Top_Hóa_Đơn_" + currentPeriod.replace(" ", "_");
+                exportToExcel(table, fileName);
+            });
             pTableWrapper = createTableWithLabel(table, "TOP HÓA ĐƠN TỔNG TIỀN NHIỀU NHẤT", btnExport);
         } else {
             pTableWrapper = createTableWithLabel(table, "TOP HÓA ĐƠN TỔNG TIỀN NHIỀU NHẤT");
@@ -66,6 +70,7 @@ public class InvoiceStatsPanel extends JPanel {
     }
 
     public void loadData(String period) {
+        this.currentPeriod = period;
         setTableTitle("TOP HÓA ĐƠN TỔNG TIỀN NHIỀU NHẤT (" + period.toUpperCase() + ")");
         tableModel.setRowCount(0);
         String dateFilter = getSqlDateFilter(period);

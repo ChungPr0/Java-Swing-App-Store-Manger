@@ -1,106 +1,106 @@
-# 🛒 Phần Mềm Quản Lý Bán Hàng (Store Manager App)
+# 🛒 PHẦN MỀM QUẢN LÝ BÁN HÀNG (POS JAVA SWING)
 
-Ứng dụng desktop quản lý cửa hàng bán lẻ được xây dựng bằng **Java Swing** và cơ sở dữ liệu **SQLite**. Ứng dụng cung cấp giải pháp toàn diện từ quản lý kho, nhân viên, khách hàng, nhà cung cấp đến lập hóa đơn và báo cáo thống kê chi tiết.
+![Java](https://img.shields.io/badge/Language-Java_17+-orange?style=for-the-badge&logo=java)
+![Database](https://img.shields.io/badge/Database-SQLite-blue?style=for-the-badge&logo=sqlite)
+![Version](https://img.shields.io/badge/Version-2.0.0-green?style=for-the-badge)
 
----
-
-## 🚀 Tính Năng Nổi Bật
-
-### 1. 📊 Trang Chủ (Dashboard & Thống Kê)
-*   **Tổng quan:** Hiển thị nhanh Doanh thu, Số sản phẩm đã bán, Khách hàng hoạt động, và Số đơn hàng.
-*   **Bộ lọc thời gian linh hoạt:** Xem báo cáo theo **Hôm nay, 7 ngày qua, Tháng này, Quý này, Năm nay**.
-*   **Biểu đồ trực quan:**
-    *   Biểu đồ cột (Bar Chart): Phân tích doanh thu theo thời gian thực.
-    *   Biểu đồ tròn (Pie Chart): Tỉ lệ phần trăm doanh thu theo danh mục sản phẩm.
-*   **Bảng xếp hạng:** Top sản phẩm bán chạy, Top khách hàng chi tiêu nhiều nhất, Top hóa đơn giá trị cao.
-
-### 2. 📦 Quản Lý Sản Phẩm (Product Manager)
-*   Thêm, sửa, xóa thông tin sản phẩm.
-*   Quản lý số lượng tồn kho, giá bán.
-*   Phân loại sản phẩm (Categories) và Nhà cung cấp (Suppliers).
-*   Tìm kiếm và sắp xếp sản phẩm thông minh.
-
-### 3. 🧾 Quản Lý Hóa Đơn (Invoice / POS)
-*   **Tạo hóa đơn mới:** Chọn khách hàng, nhân viên bán hàng, thêm sản phẩm vào giỏ.
-*   **Tự động tính toán:** Tổng tiền, cập nhật trừ kho tự động khi thanh toán.
-*   **In hóa đơn:** Xem trước và in hóa đơn (Giao diện mô phỏng HTML).
-*   Xem lịch sử và chi tiết hóa đơn đã bán.
-
-### 4. 👥 Quản Lý Đối Tác & Nhân Sự
-*   **Nhân viên (Staff):** Quản lý hồ sơ, phân quyền (Admin/Staff), cấp tài khoản đăng nhập.
-*   **Khách hàng (Customer):** Lưu trữ thông tin, lịch sử mua hàng.
-*   **Nhà cung cấp (Supplier):** Quản lý nguồn nhập hàng, xem danh sách sản phẩm cung cấp.
-
-### 5. 🔐 Hệ Thống & Bảo Mật
-*   Đăng nhập / Đăng xuất an toàn.
-*   Phân quyền chức năng dựa trên vai trò (Admin có toàn quyền, Staff bị giới hạn một số chức năng quản lý).
-*   Đổi mật khẩu cá nhân.
+> **Giải pháp quản lý bán hàng toàn diện, gọn nhẹ (Portable) dành cho cửa hàng vừa và nhỏ.**
 
 ---
 
-## 🛠 Công Nghệ Sử Dụng
-
-*   **Ngôn ngữ:** Java (JDK 8 trở lên).
-*   **Giao diện (GUI):** Java Swing (Sử dụng các Custom Components, CardLayout, BorderLayout...).
-*   **Cơ sở dữ liệu:** SQLite (Lưu trữ cục bộ, không cần cài đặt server phức tạp).
-*   **Thư viện:** `sqlite-jdbc` (Kết nối Database).
-*   **Mô hình:** MVC (Model-View-Controller) pattern (tương đối).
-
----
-
-## ⚙️ Cài Đặt & Chạy Ứng Dụng
-
-### Yêu cầu
-*   Java Development Kit (JDK) phiên bản 8 trở lên.
-*   IDE: IntelliJ IDEA, Eclipse, hoặc NetBeans.
-
-### Các bước thực hiện
-1.  **Clone dự án:**
-    ```bash
-    git clone https://github.com/username/Java-Swing-App-Store-Manager.git
-    ```
-2.  **Mở dự án:** Mở thư mục dự án trong IDE của bạn.
-3.  **Cấu hình thư viện:**
-    *   Đảm bảo file `sqlite-jdbc-....jar` đã được thêm vào **Libraries/Classpath** của dự án.
-4.  **Cơ sở dữ liệu:**
-    *   File `storedatabase.db` sẽ tự động được tạo hoặc sử dụng file có sẵn trong thư mục gốc.
-    *   Nếu cần reset dữ liệu, bạn có thể chạy script trong `ResourcesPack/csdl.sql` bằng một công cụ quản lý SQLite (như *DB Browser for SQLite*).
-5.  **Chạy ứng dụng:**
-    *   Tìm file `src/Main/Main.java` (hoặc `src/Main/LoginManager/LoginForm.java`) và chạy (Run).
+## 📑 MỤC LỤC
+1. [Giới thiệu](#-giới-thiệu)
+2. [Tính năng nổi bật](#-tính-năng-nổi-bật)
+3. [Chuẩn bị Database](#-chuẩn-bị-database-sqlite)
+4. [Hướng dẫn chạy phần mềm](#-hướng-dẫn-chạy-phần-mềm)
+5. [Hướng dẫn sử dụng chi tiết](#-hướng-dẫn-sử-dụng-chi-tiết)
 
 ---
 
-## 📂 Cấu Trúc Thư Mục
+## 📖 GIỚI THIỆU
 
-```
+Phần mềm **Quản Lý Bán Hàng** được xây dựng trên nền tảng **Java Swing** kết hợp với cơ sở dữ liệu **SQLite**. Điểm mạnh của phiên bản này là sự **Gọn nhẹ (Portable)**: Không cần cài đặt server database phức tạp, chỉ cần tải về là chạy ngay (Plug & Play).
+
+Phần mềm hoạt động tốt trên Windows, macOS và Linux.
+
+---
+
+## 🌟 TÍNH NĂNG NỔI BẬT
+
+| Chức năng                 | Mô tả chi tiết                                                                        |
+|:--------------------------|:--------------------------------------------------------------------------------------|
+| **📊 Thống kê Đa dạng**   | Xem báo cáo theo **Ngày, Tuần, Tháng, Quý, Năm**. Biểu đồ trực quan.                  |
+| **📦 Quản lý Kho Hàng**   | Tự động trừ kho ngay khi giao dịch thành công. **Chặn bán quá số lượng tồn**.         |
+| **💾 Database Nhúng**     | Sử dụng **SQLite**. Dữ liệu nằm gọn trong 1 file `.db`. Dễ dàng sao chép, backup.     |
+| **🧾 Hóa đơn thông minh** | Tạo hóa đơn siêu tốc. **Hoàn kho tự động** nếu xóa hóa đơn. In hóa đơn chuyên nghiệp. |
+| **🛡️ Bảo mật & An toàn** | Ứng dụng cơ chế **Transaction** đảm bảo toàn vẹn dữ liệu.                             |
+| **👥 Phân quyền**         | **Admin** (Toàn quyền) và **Staff** (Hạn chế quyền xóa/sửa sâu).                      |
+
+---
+
+## 🛠 CHUẨN BỊ DATABASE (SQLITE)
+
+Vì sử dụng SQLite, bạn **KHÔNG CẦN** cài đặt MySQL Server hay XAMPP.
+
+### Cách tạo file dữ liệu:
+1. Phần mềm cần một file database tên là `storedatabase.db` nằm cùng thư mục với file chạy.
+2. Nếu bạn chưa có file này, hãy dùng công cụ **DB Browser for SQLite** để chạy file script tạo bảng.
+   - File script nằm tại: `ResourcesPack/csdl.sql`
+   - Import file sql này vào DB Browser để tạo ra file `.db`.
+
+---
+
+## 🚀 HƯỚNG DẪN CHẠY PHẦN MỀM
+
+### 1. Cấu trúc thư mục chuẩn
+```text
 Java-Swing-App-Store-Manager/
-├── assets/                 # Chứa hình ảnh, icon
-├── src/
-│   ├── Main/
-│   │   ├── CustomerManager/ # Quản lý khách hàng
-│   │   ├── HomeManager/     # Màn hình chính & Thống kê
-│   │   ├── InvoiceManager/  # Quản lý hóa đơn
-│   │   ├── LoginManager/    # Đăng nhập & Đổi mật khẩu
-│   │   ├── ProductManager/  # Quản lý sản phẩm
-│   │   ├── StaffManager/    # Quản lý nhân viên
-│   │   ├── SupplierManager/ # Quản lý nhà cung cấp
-│   │   └── DashBoard.java   # Khung giao diện chính
-│   └── Utils/
-│       ├── DBConnection.java # Kết nối SQLite
-│       └── ...
-├── storedatabase.db        # File cơ sở dữ liệu SQLite
-└── README.md
+├── ☕ StoreManager.jar      (File phần mềm chính)
+└── 🗄️ storedatabase.db     (File dữ liệu SQLite)
+```
+
+### 2. Cách khởi động
+* **Cách 1 (Nhanh):** Double click vào file `.jar`.
+* **Cách 2 (Khuyên dùng khi lỗi):** Mở CMD tại thư mục đó và gõ:
+```bash
+java -jar StoreManager.jar
 ```
 
 ---
 
-## 📸 Screenshots
+## 📘 HƯỚNG DẪN SỬ DỤNG CHI TIẾT
 
-*(Bạn có thể thêm ảnh chụp màn hình ứng dụng tại đây)*
+### 🔐 1. Đăng Nhập Hệ Thống
+Tài khoản mặc định (nếu sử dụng file DB mẫu):
+
+|  Vai trò  | Tài khoản | Mật khẩu | Quyền hạn                                                      |
+|:---------:|:---------:|:--------:|:---------------------------------------------------------------|
+| **Admin** |  `admin`  |  `123`   | Toàn quyền hệ thống (Thêm/Sửa/Xóa nhân viên, Xem báo cáo...)   |
+| **Staff** |  `user1`  |  `123`   | Chỉ bán hàng, Xem danh sách, Không được xóa dữ liệu quan trọng |
+
+### 🛒 2. Quy Trình Bán Hàng
+1. **Vào tab Hóa Đơn** → Bấm <kbd>Tạo mới</kbd>.
+2. **Chọn Khách hàng:** Chọn từ danh sách hoặc bấm **(+)** để thêm nhanh.
+3. **Thêm Sản phẩm:**
+   * Bấm <kbd>THÊM</kbd>.
+   * Chọn sản phẩm (Hệ thống hiện tồn kho từ file SQLite tức thời).
+   * Nhập số lượng → **Xác nhận**.
+4. **Thanh toán:**
+   * Kiểm tra tổng tiền.
+   * Bấm <kbd>Lưu hóa đơn</kbd>.
+
+### 🧾 3. Quản lý Hóa đơn
+* **Xem chi tiết:** Click vào hóa đơn bên trái.
+* **Xóa hóa đơn (Admin):** Bấm <kbd>Xóa</kbd> → Số lượng hàng sẽ tự động được cộng lại vào kho.
+* **Xuất Excel:** Bấm nút <kbd>Xuất Excel</kbd> để tải về báo cáo doanh thu.
+
+### 👥 4. Quản lý Khách hàng
+* Tìm kiếm theo Tên hoặc Số điện thoại.
+* Sắp xếp danh sách A-Z hoặc theo mức độ chi tiêu.
 
 ---
 
-## 👨‍💻 Tác Giả
-
-Dự án được phát triển bởi **[Chung]**.
-Mọi đóng góp và ý kiến phản hồi đều được hoan nghênh!
+<div style="text-align: center;">
+<b>© 2025 Copyright by Chung. All rights reserved.</b><br>
+<i>Designed with ❤️ using Java Swing & SQLite.</i>
+</div>
