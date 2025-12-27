@@ -645,7 +645,7 @@ public class InvoiceManagerPanel extends JPanel {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                showError(this, "Lỗi: " + e.getMessage());
             }
         }
 

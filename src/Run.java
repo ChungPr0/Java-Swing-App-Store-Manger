@@ -4,6 +4,7 @@ import Utils.DBConnection;
 import javax.swing.*;
 import java.awt.*;
 import java.sql.Connection;
+import java.util.Locale;
 
 import static Utils.Style.showError;
 
@@ -14,6 +15,7 @@ public class Run {
      * Sử dụng invokeLater để đảm bảo luồng giao diện (EDT) chạy an toàn.
      */
     public static void main(String[] args) {
+        Locale.setDefault(Locale.US);
         SwingUtilities.invokeLater(Run::createAndShowGUI);
     }
 

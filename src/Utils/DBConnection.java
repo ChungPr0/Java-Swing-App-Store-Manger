@@ -9,7 +9,7 @@ public class DBConnection {
 
     // Đường dẫn "cứng" tới file database.
     // "jdbc:sqlite:storedatabase.db" nghĩa là file nằm ngay cạnh file chạy (.jar) hoặc thư mục gốc dự án.
-    private static final String DB_URL = "jdbc:sqlite:storedatabase.db";
+    private static final String DB_URL = "jdbc:sqlite:data/storedatabase.db";
 
     /**
      * Tạo kết nối tới file SQLite Database và bật hỗ trợ khóa ngoại.
